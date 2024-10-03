@@ -1,0 +1,13 @@
+name: NarouSkinPacks
+version: '${version}'
+main: org.com.syun0521.minecraft.narouskinpacks.NarouSkinPacks
+api-version: 1.16
+author: YourName
+description: A plugin to display particles at players' feet when they walk.
+
+commands:
+  nsp:
+    description: Main command for NarouSkinPacks
+    usage: /nsp <subcommand>
+    permission: nsp.nsp
+    aliases: [narouskinpacks]
