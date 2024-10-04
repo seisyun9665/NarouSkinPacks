@@ -5,37 +5,27 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.plugin.java.JavaPlugin
+import org.com.syun0521.minecraft.narouskinpacks.skin.Skin
 
 class NarouSkinPacks : JavaPlugin(), Listener {
     lateinit var config: CustomConfig
-    private lateinit var particle: Particle
-    private var amount: Int = 20
-    private var x: Double = 0.5
-    private var y: Double = 0.0
-    private var z: Double = 0.5
-    private var speed: Double = 0.1
-    private var forwardOffset: Double = 5.0 // New variable for forward offset
+    lateinit var skinConfig: CustomConfig
+    var skinName: String = "shining"
 
     override fun onEnable() {
         saveDefaultConfig()
         config = CustomConfig(this)
+        skinConfig = CustomConfig(this, fileName = "skins.yml", resource = "skins.yml")
         server.pluginManager.registerEvents(this, this)
-        val commandExecutor = Command(this, config)
+        val commandExecutor = Command(this)
         getCommand("nsp")?.executor = commandExecutor
-        getCommand("nsp")?.tabCompleter = NSPCommandTabCompleter()
+        getCommand("nsp")?.tabCompleter = NSPCommandTabCompleter(this)
         reloadAllConfig()
     }
 
     fun reloadAllConfig() {
         config.reloadConfig()
-        val particleName = config.getString("default.particle.type", "END_ROD")
-        particleName?.let { particle = Particle.valueOf(it) }
-        amount = config.getInt("default.particle.amount", 20)
-        x = config.getDouble("default.particle.x", 0.5)
-        y = config.getDouble("default.particle.y", 0.0)
-        z = config.getDouble("default.particle.z", 0.5)
-        speed = config.getDouble("default.particle.speed", 0.1)
-        forwardOffset = config.getDouble("default.particle.forwardOffset", 5.0) // Load from config
+        skinConfig.reloadConfig()
     }
 
     @EventHandler
@@ -49,8 +39,38 @@ class NarouSkinPacks : JavaPlugin(), Listener {
             val direction = to.toVector().subtract(from.toVector())
             direction.setY(0)
 
-            val spawnLocation = player.location.add(direction.multiply(forwardOffset))
-            player.world.spawnParticle(particle, spawnLocation, amount, x, y, z, speed)
+            // Retrieve the skin configuration for the player
+            val skin = getSkinFromConfig(skinName)
+
+            val spawnLocation = player.location.add(direction.multiply(skin.forwardOffset))
+            player.world.spawnParticle(
+                Particle.valueOf(skin.particle),
+                spawnLocation,
+                skin.amount,
+                skin.x,
+                skin.y,
+                skin.z,
+                skin.speed
+            )
         }
+    }
+
+    fun getSkinFromConfig(skinName: String): Skin {
+        val skinSection = skinConfig.getConfig()?.getConfigurationSection("skins.$skinName")
+        val particle = skinSection?.getString("particle") ?: "END_ROD"
+        val type = skinSection?.getString("type") ?: "onStep"
+        val amount = skinSection?.getInt("amount") ?: 20
+        val x = skinSection?.getDouble("x") ?: 0.5
+        val y = skinSection?.getDouble("y") ?: 0.0
+        val z = skinSection?.getDouble("z") ?: 0.5
+        val speed = skinSection?.getDouble("speed") ?: 0.1
+        val forwardOffset = skinSection?.getDouble("forwardOffset") ?: 5.0
+
+        return Skin(skinName, particle, type, amount, x, y, z, speed, forwardOffset)
+    }
+
+    fun getSkinNames(): List<String> {
+        val skinsSection = skinConfig.getConfig()?.getConfigurationSection("skins")
+        return skinsSection?.getKeys(false)?.toList() ?: emptyList()
     }
 }

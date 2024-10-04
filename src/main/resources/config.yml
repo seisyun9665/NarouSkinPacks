@@ -1,9 +1,6 @@
-default:
-  particle:
-    type: "END_ROD"
-    amount: 20
-    x: 0.5
-    y: 0.0
-    z: 0.5
-    speed: 0.1
-    forwardOffset: 5.0
+# プレイヤーごとの設定されているスキン情報
+skins:
+  players:
+    seisyun:
+      skin-onStep: "Shining"
+
