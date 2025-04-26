@@ -2,6 +2,7 @@ package org.com.syun0521.minecraft.narouskinpacks
 
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
+import org.com.syun0521.minecraft.narouskinpacks.skin.Skin
 import java.io.File
 import java.io.IOException
 
@@ -180,5 +181,18 @@ class CustomConfig {
 
     fun getBoolean(path: String?, def: Boolean): Boolean {
         return config?.getBoolean(path, def) ?: def
+    }
+    fun getSkin(skinName: String): Skin {
+        val skinSection = this.getConfig()?.getConfigurationSection("skins.$skinName")
+        val particle = skinSection?.getString("particle") ?: "END_ROD"
+        val type = skinSection?.getString("type") ?: "onStep"
+        val amount = skinSection?.getInt("amount") ?: 1
+        val x = skinSection?.getDouble("x") ?: 0.0
+        val y = skinSection?.getDouble("y") ?: 0.0
+        val z = skinSection?.getDouble("z") ?: 0.0
+        val speed = skinSection?.getDouble("speed") ?: 0.0
+        val forwardOffset = skinSection?.getDouble("forwardOffset") ?: 5.0
+
+        return Skin(skinName, particle, type, amount, x, y, z, speed, forwardOffset)
     }
 }
