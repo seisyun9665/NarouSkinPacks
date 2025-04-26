@@ -1,0 +1,108 @@
+---
+description: 
+globs: **/*.kt
+alwaysApply: false
+---
+# Minecraftプラグイン開発（Kotlin）特有のガイドライン
+
+本プロジェクトでは、Kotlinの特性を活かした開発を推奨します。以下のガイドラインに従ってコードを記述してください。
+
+## 原則
+
+- コードは常に可読性・拡張性・保守性を意識して記述すること
+- 役割ごとにパッケージやクラスを分離し、責務を明確にすること
+- UI（例：BossBar）とロジックは疎結合に設計し、相互参照を避けること
+
+## Kotlin固有の実装ガイドライン
+
+### 言語機能の活用
+
+- **トップレベル関数**: ユーティリティ関数はクラスに閉じ込めず、トップレベル関数として実装する
+  ```kotlin
+  // 良い例
+  fun calculateDistance(from: Location, to: Location): Double {
+      return from.distance(to)
+  }
+  
+  // 避けるべき例（Javaスタイル）
+  class LocationUtils {
+      companion object {
+          fun calculateDistance(from: Location, to: Location): Double {
+              return from.distance(to)
+          }
+      }
+  }
+  ```
+
+- **object宣言**: 状態を持たず操作のみを行うユーティリティクラスには、object宣言を使用する
+  ```kotlin
+  object ParticleUtils {
+      fun spawnParticle(location: Location, particle: Particle) {
+          location.world?.spawnParticle(particle, location, 1)
+      }
+  }
+  ```
+
+- **拡張関数**: 既存のBukkitクラスに機能を追加する場合は拡張関数を使用する
+  ```kotlin
+  fun Player.sendColoredMessage(message: String) {
+      this.sendMessage(ChatColor.translateAlternateColorCodes('&', message))
+  }
+  ```
+
+### 構造とアーキテクチャ
+
+- **コマンドとイベントリスナー**: 個別クラスで実装し、メインクラス（JavaPlugin継承）でのみ登録する
+  ```kotlin
+  // メインクラスでの登録
+  override fun onEnable() {
+      getCommand("nsp")?.executor = NSPCommand(this)
+      server.pluginManager.registerEvents(PlayerMoveListener(this), this)
+  }
+  
+  // 別クラスでの実装
+  class PlayerMoveListener(private val plugin: NarouSkinPacks) : Listener {
+      @EventHandler
+      fun onPlayerMove(event: PlayerMoveEvent) {
+          // 処理内容
+      }
+  }
+  ```
+
+- **JavaPlugin継承の制限**: メインクラス以外でJavaPluginを継承しない
+  - インスタンスの参照が必要な場合は、コンストラクタ経由で注入する
+
+- **状態管理**: シングルトンやobjectの使用は「状態を持たず操作のみを行う」用途に限定する
+  - プレイヤーデータなどの状態を持つものは、メインクラスからの参照で管理する
+
+## エラー処理とnullセーフティ
+
+- **Nullableな型**: Bukkitのメソッドから返される可能性のあるnull値は常に考慮する
+  ```kotlin
+  val world = player.world ?: return  // nullの場合は早期リターン
+  
+  player.world?.let { world ->
+      // worldがnullでない場合の処理
+  }
+  ```
+
+- **例外処理**: Minecraft固有の例外は適切にキャッチし、わかりやすいメッセージを表示する
+  ```kotlin
+  try {
+      // 危険な操作
+  } catch (e: Exception) {
+      plugin.logger.warning("エラーが発生しました: ${e.message}")
+      player?.sendMessage("§c操作中にエラーが発生しました")
+  }
+  ```
+
+## テスト容易性
+
+- **依存関係の最小化**: クラス間の依存関係を最小限にし、テストしやすい設計とする
+- **インターフェースの活用**: 外部サービスや複雑なロジックはインターフェースでラップし、モック可能にする
+
+## 参考資料
+
+- [Kotlinの公式スタイルガイド](mdc:https:/kotlinlang.org/docs/coding-conventions.html)
+- [Effective Kotlin](mdc:https:/leanpub.com/effectivekotlin)
+- [Spigot API ドキュメント](mdc:https:/hub.spigotmc.org/javadocs/spigot)

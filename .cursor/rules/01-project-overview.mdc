@@ -1,0 +1,30 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# NarouSkinPacks プロジェクト概要
+
+NarouSkinPacksは、Minecraftサーバー用のBukkit/Spigotプラグインで、プレイヤーが歩いたときにカスタマイズ可能なパーティクルエフェクト（スキン）を表示します。
+
+## 主要ファイル
+
+- メインクラス: [src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/NarouSkinPacks.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/NarouSkinPacks.kt)
+- 設定管理: [src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/CustomConfig.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/CustomConfig.kt)
+- コマンド処理: [src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/Command.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/Command.kt)
+- プレイヤー移動処理: [src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/events/PlayerMoveHandler.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/events/PlayerMoveHandler.kt)
+- スキンデータクラス: [src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/skin/Skin.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/skin/Skin.kt)
+- プラグイン設定: [src/main/resources/config.yml](mdc:src/main/resources/config.yml)
+- スキン設定: [src/main/resources/skins.yml](mdc:src/main/resources/skins.yml)
+- プラグイン定義: [src/main/resources/plugin.yml](mdc:src/main/resources/plugin.yml)
+
+## プロジェクト構造
+
+プロジェクトはKotlinで開発されており、Gradleを使用してビルドします。主要な機能は以下の通りです：
+
+1. プレイヤーごとに異なるスキン設定
+2. YAMLベースの設定ファイル
+3. コマンドによる設定管理
+4. プレイヤーの移動検知とパーティクル表示
+
+詳細は[README.md](mdc:README.md)を参照してください。

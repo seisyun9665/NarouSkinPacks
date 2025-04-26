@@ -1,0 +1,54 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# スキンシステム
+
+NarouSkinPacksのスキンシステムは、プレイヤーが歩いた時に表示するパーティクルエフェクトを管理します。
+
+## 主要コンポーネント
+
+1. [Skin](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/skin/Skin.kt) - スキンのプロパティを保持するデータクラス
+2. [CustomConfig#getSkin](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/CustomConfig.kt) - 設定ファイルからスキン情報を読み取りSkinオブジェクトを生成
+3. [PlayerMoveHandler](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/events/PlayerMoveHandler.kt) - プレイヤーの移動に応じてパーティクルを表示
+
+## 処理フロー
+
+1. プレイヤーが移動すると、`NarouSkinPacks#onPlayerMove`がイベントをキャッチします
+2. `PlayerMoveHandler#handlePlayerMove`に処理が委譲されます
+3. プレイヤーの設定を確認し、スキンが設定されていれば以下の処理を実行します：
+   - プレイヤーの移動方向を計算
+   - 設定に基づいてパーティクルの生成位置を決定
+   - パーティクルを表示
+
+## スキンパラメータ
+
+スキンは以下のパラメータで定義されます：
+
+- `skinName` - スキンの識別子
+- `particle` - Minecraft のパーティクル種類
+- `type` - 発動タイプ（onStep など）
+- `amount` - パーティクルの量
+- `x`, `y`, `z` - パーティクルの広がり（オフセット）
+- `speed` - パーティクルの速度
+- `forwardOffset` - プレイヤーの前方向へのオフセット
+
+## カスタムスキンの作成方法
+
+カスタムスキンを作成するには、[skins.yml](mdc:src/main/resources/skins.yml)ファイルに新しいエントリを追加します：
+
+```yaml
+skins:
+  my_custom_skin:
+    particle: "FLAME"
+    type: "onStep"
+    amount: 30
+    x: 0.3
+    y: 0.1
+    z: 0.3
+    speed: 0.2
+    forwardOffset: 4.0
+```
+
+そして、`/nsp setuseskin <player> my_custom_skin`コマンドでプレイヤーに適用できます。

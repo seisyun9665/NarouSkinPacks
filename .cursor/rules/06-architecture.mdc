@@ -1,0 +1,83 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# プロジェクトアーキテクチャ
+
+NarouSkinPacksは、明確な責任分離に基づいた構造を持っています。このドキュメントでは、プロジェクトの全体的なアーキテクチャを説明します。
+
+## パッケージ構造
+
+```
+org.com.syun0521.minecraft.narouskinpacks/
+├── NarouSkinPacks.kt    # メインクラス・エントリーポイント
+├── Command.kt           # コマンド処理
+├── NSPCommandTabCompleter.kt  # コマンド補完
+├── CustomConfig.kt      # 設定管理
+├── events/              # イベント処理
+│   └── PlayerMoveHandler.kt  # プレイヤー移動処理
+└── skin/                # スキン関連
+    └── Skin.kt          # スキンデータモデル
+```
+
+## アーキテクチャ概要
+
+NarouSkinPacksは以下のレイヤーで構成されています：
+
+1. **プラグインコア** - [NarouSkinPacks.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/NarouSkinPacks.kt)
+   - Bukkit/Spigotプラグインフレームワークとの接続点
+   - イベントリスナーの登録
+   - プラグインのライフサイクル管理
+
+2. **設定管理** - [CustomConfig.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/CustomConfig.kt)
+   - YAML設定ファイルの読み込み・保存
+   - 型安全な設定アクセスの提供
+   - スキンデータのモデル変換
+
+3. **ユーザーインターフェース** - [Command.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/Command.kt)
+   - コマンド処理と引数の検証
+   - ユーザーへのフィードバック
+   - タブ補完によるUX向上
+
+4. **イベント処理** - [events/PlayerMoveHandler.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/events/PlayerMoveHandler.kt)
+   - プレイヤーの移動イベント処理
+   - スキン適用のロジック
+   - パーティクル表示の実装
+
+5. **データモデル** - [skin/Skin.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/skin/Skin.kt)
+   - スキンパラメータの定義
+   - データ整合性の確保
+
+## データフロー
+
+1. プラグイン起動時：
+   - NarouSkinPacks#onEnable で設定ファイルを読み込み
+   - イベントリスナーとコマンド登録
+
+2. コマンド実行時：
+   - Command クラスがコマンドを処理
+   - プレイヤー設定を CustomConfig を通じて保存
+
+3. プレイヤー移動時：
+   - NarouSkinPacks#onPlayerMove がイベントを受け取る
+   - PlayerMoveHandler に処理を委譲
+   - プレイヤー設定を CustomConfig から読み込み
+   - スキン情報に基づきパーティクル表示
+
+## 拡張ポイント
+
+将来的な機能拡張を行いやすい設計になっています：
+
+1. **新しいコマンド追加**：
+   - Command クラスの when 式に新しいコマンド分岐を追加
+   - NSPCommandTabCompleter に補完を追加
+
+2. **新しいイベントタイプ追加**：
+   - 新しいイベントハンドラクラスを events パッケージに追加
+   - NarouSkinPacks クラスに対応するリスナーメソッドを追加
+
+3. **スキンパラメータの拡張**：
+   - Skin クラスにプロパティを追加
+   - CustomConfig#getSkin メソッドを更新
+   - skins.yml に新しいパラメータを追加

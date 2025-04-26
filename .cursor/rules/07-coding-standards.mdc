@@ -1,0 +1,113 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# コーディングスタンダード
+
+このプロジェクトでは、以下のコーディングスタンダードを採用しています。新しい機能を実装する際や既存コードを修正する際は、これらのガイドラインに従ってください。
+
+## パッケージ構造とクラス分離
+
+### パッケージ構造
+
+- 関連する機能ごとにサブパッケージを作成
+  - `events` - イベントハンドラ
+  - `skin` - スキン関連のモデルクラス
+  - 今後追加する場合: `commands`, `config`, `util` など
+
+### クラス分離の原則
+
+- **単一責任の原則**: 各クラスは明確に定義された単一の責任を持つべき
+  - 良い例: [PlayerMoveHandler](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/events/PlayerMoveHandler.kt) はプレイヤー移動処理のみを担当
+  - 悪い例: すべての機能を NarouSkinPacks クラスに実装する
+
+- **関心の分離**:
+  - **モデル**: データ構造と基本的な操作のみを含む（[Skin](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/skin/Skin.kt)）
+  - **ビュー**: ユーザーインターフェース（コマンド、表示関連）
+  - **コントローラ**: イベント処理とビジネスロジック（[PlayerMoveHandler](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/events/PlayerMoveHandler.kt)）
+
+## Kotlin コーディングスタイル
+
+### 命名規則
+
+- **クラス名**: UpperCamelCase (例: `PlayerMoveHandler`)
+- **関数名**: lowerCamelCase (例: `handlePlayerMove`)
+- **変数名**: lowerCamelCase (例: `skinConfig`)
+- **定数**: UPPER_SNAKE_CASE (例: `DEFAULT_SKIN_NAME`)
+- **パッケージ名**: すべて小文字 (例: `org.com.syun0521.minecraft.narouskinpacks`)
+
+### Kotlin の機能活用
+
+- **データクラス**: 単純なデータモデルには data class を使用
+  ```kotlin
+  data class Skin(
+      var skinName: String,
+      var particle: String,
+      ...
+  )
+  ```
+
+- **nullセーフティ**: Nullableな型は明示的に `?` を使用
+  ```kotlin
+  // 良い例
+  val skinsSection = skinConfig.getConfig()?.getConfigurationSection("skins")
+  
+  // 悪い例
+  val skinsSection = skinConfig.getConfig().getConfigurationSection("skins") // NullPointerException の危険
+  ```
+
+- **スコープ関数**: 適切な場面でスコープ関数を使用
+  ```kotlin
+  player?.let { p ->
+      // プレイヤーがnullでない場合の処理
+  } ?: run {
+      // プレイヤーがnullの場合の処理
+  }
+  ```
+
+- **拡張関数**: 共通機能は拡張関数として実装
+
+## イベント処理
+
+- イベントハンドラは小さく保ち、ロジックは専用のハンドラクラスに委譲
+  ```kotlin
+  @EventHandler
+  fun onPlayerMove(event: PlayerMoveEvent) {
+      playerMoveHandler.handlePlayerMove(event)
+  }
+  ```
+
+- イベントハンドラクラスはテスト可能な設計に
+
+## エラー処理
+
+- 例外はcatch and handle、または明示的に上位レイヤーに伝播
+- ユーザーに表示するエラーメッセージは親切で具体的に
+- デバッグ用のログはレベルを適切に設定
+
+## コメント
+
+- コードは自己説明的に書く
+- 複雑なロジックには「なぜそうしているか」の説明をコメントに
+- クラスや公開メソッドにはKDoc形式のコメントを記述
+
+## 設定ファイル
+
+- 設定値のハードコーディングを避け、YAML設定ファイルを使用
+- 設定値には適切なデフォルト値を用意
+
+## 将来の拡張性
+
+- インターフェースを使用して実装の詳細を隠蔽
+- 新機能追加時にはテスト容易性を考慮
+
+## 例：新機能の追加手順
+
+1. 適切なパッケージに新しいクラスを作成
+2. 既存コードとの結合点を最小限に
+3. nullセーフティに配慮
+4. ユーザー入力を適切に検証
+5. 適切なエラーメッセージを提供
+6. 設定ファイルに必要なパラメータを追加
+7. READMEやコメントを更新

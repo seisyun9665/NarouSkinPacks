@@ -1,0 +1,53 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# コマンドシステム
+
+NarouSkinPacksのコマンドシステムは、プラグインの操作と設定を行うためのインターフェースを提供します。
+
+## コマンド実装
+
+- [Command.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/Command.kt) - コマンド実行を処理
+- [NSPCommandTabCompleter.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/NSPCommandTabCompleter.kt) - タブ補完を提供
+
+## 利用可能なコマンド
+
+すべてのコマンドは `/nsp` から始まります（エイリアス: `/narouskinpacks`）：
+
+### reload
+
+```
+/nsp reload
+```
+
+プラグインの設定ファイル（config.ymlとskins.yml）をリロードします。設定ファイルを手動で編集した後に使用します。
+
+### setuseskin
+
+```
+/nsp setuseskin <player> [<skinname>]
+```
+
+指定したプレイヤーのスキンを設定します。
+
+- `<player>` - スキンを設定するプレイヤー名
+- `[<skinname>]` - 適用するスキン名（省略すると設定を解除）
+
+例：
+```
+/nsp setuseskin seinoshun shining
+```
+
+## タブ補完
+
+NSPCommandTabCompleterクラスはタブ補完機能を提供します：
+
+1. 最初の引数では利用可能なサブコマンド（reload, setuseskin）を表示
+2. setuseskinの2番目の引数ではオンラインプレイヤーの一覧を表示
+3. setuseskinの3番目の引数では利用可能なスキン名を表示
+
+## 権限
+
+コマンド実行には `nsp.nsp` 権限が必要です。権限設定は[plugin.yml](mdc:src/main/resources/plugin.yml)で定義されています。

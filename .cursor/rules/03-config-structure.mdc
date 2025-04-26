@@ -1,0 +1,60 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# 設定ファイル構造
+
+プラグインは以下の2つの主要な設定ファイルを使用します：
+
+## config.yml
+
+[config.yml](mdc:src/main/resources/config.yml)は、プレイヤーごとのスキン設定を保存します。
+
+```yaml
+# プレイヤーごとの設定されているスキン情報
+players:
+  playername:
+    onStep: "skinname"  # プレイヤーが歩いた時に表示するスキン
+```
+
+この設定は、Commandクラスのsetuseskinコマンドによって管理されます。
+
+## skins.yml
+
+[skins.yml](mdc:src/main/resources/skins.yml)は、利用可能なスキンの定義を保存します。
+
+```yaml
+skins:
+  skinname:
+    particle: "END_ROD"  # パーティクルの種類（Minecraft のパーティクル名）
+    type: "onStep"       # 発動タイプ（現在は onStep のみ対応）
+    amount: 20           # パーティクルの量
+    x: 0.5               # X方向の広がり
+    y: 0.0               # Y方向の広がり
+    z: 0.5               # Z方向の広がり
+    speed: 0.1           # パーティクルの速度
+    forwardOffset: 5.0   # 前方オフセット
+```
+
+スキン設定は[Skin](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/skin/Skin.kt)クラスにマッピングされます。
+
+## plugin.yml
+
+[plugin.yml](mdc:src/main/resources/plugin.yml)はプラグインのメタデータと、コマンド定義を含みます。
+
+```yaml
+name: NarouSkinPacks
+version: '${version}'
+main: org.com.syun0521.minecraft.narouskinpacks.NarouSkinPacks
+api-version: 1.16
+author: YourName
+description: A plugin to display particles at players' feet when they walk.
+
+commands:
+  nsp:
+    description: Main command for NarouSkinPacks
+    usage: /nsp <subcommand>
+    permission: nsp.nsp
+    aliases: [narouskinpacks]
+```
