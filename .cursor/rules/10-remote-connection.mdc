@@ -1,5 +1,99 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# リモート接続と開発環境設定
+
+NarouSkinPacksプロジェクトでは、開発効率化のためにリモートサーバーへの接続やデプロイを自動化するスクリプトを提供しています。
+
+## SSH接続設定
+
+リモートMinecraftサーバーに接続するための基本設定です：
+
+```
+ホスト: 152.69.192.181
+ユーザー: opc
+SSHキー: ~/.ssh/ssh-key-2021-11-26.key
+```
+
+## スクリプト利用方法
+
+### 基本的なデプロイ（deploy-narou.sh）
+
+ビルドしたプラグインをリモートサーバーにデプロイします：
+
+```bash
+./scripts/deploy-narou.sh
+```
+
+このスクリプトは自動的にJARファイルをリモートサーバーにコピーし、既存のプラグインをバックアップします。
+
+### 統合デプロイと検証（deploy-and-verify.sh）
+
+ビルド、デプロイ、動作確認までを一度に行います：
+
+```bash
+./scripts/deploy-and-verify.sh
+```
+
+### サーバーコンソール接続（mc-console.sh）
+
+実行中のMinecraftサーバーのコンソールに接続します：
+
+```bash
+./scripts/mc-console.sh
+```
+
+## サーバー構成
+
+現在、以下の2つのサーバー環境があります：
+
+1. **paper** - `/home/opc/servers/paper`
+   - 最新バージョン用のテスト環境
+   
+2. **ros** - `/home/opc/servers/ros`
+   - 安定版の運用環境
+
+## CI/CD設定
+
+GitHub Actionsによる自動ビルド・デプロイに対応しています。`.github/workflows`にワークフロー設定があります。
+
+## サーバー管理コマンド
+
+リモートサーバーでよく使用するコマンド集：
+
+```bash
+# サーバー起動
+cd /home/opc/servers/paper
+/home/opc/scripts/start-minecraft.sh
+
+# プラグインのリロード
+# サーバーコンソール内で実行
+reload confirm
+
+# サーバーのシャットダウン
+# サーバーコンソール内で実行
+stop
+```
+
+## トラブルシューティング
+
+### SSH接続エラー
+
+SSH接続に問題がある場合：
+
+1. SSHキーのパーミッションを確認（600であるべき）
+   ```bash
+   chmod 600 ~/.ssh/ssh-key-2021-11-26.key
+   ```
+
+2. SSHキーのパスが正しいかを確認
+
+3. サーバーが起動しているかを確認
+
+### デプロイ後のプラグイン問題
+
+1. サーバーログを確認 `/home/opc/servers/paper/logs/latest.log`
+2. プラグインが正しくロードされているか確認 `/plugins` コマンド
+3. 必要に応じてリロードを実行 `/reload confirm`
