@@ -2,4 +2,11 @@
 players:
   seisyun:
     onStep: "Shining"
+    coins: 100 # 初期コイン数
+
+# APIサーバー設定
+api:
+  enabled: false
+  port: 8080
+  apiKey: "YOUR_API_KEY" # 実際の環境では強力なAPIキーに変更してください
 

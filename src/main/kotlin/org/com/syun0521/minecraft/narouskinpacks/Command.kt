@@ -44,6 +44,103 @@ class Command(private val plugin: NarouSkinPacks) : CommandExecutor {
                 sender.sendMessage("Skin for player $playerName set to $skinName")
                 return true
             }
+            "coins" -> {
+                if (args.size < 2) {
+                    sender.sendMessage("Usage: /nsp coins <get|add|set|remove> <player> [amount]")
+                    return true
+                }
+
+                when (args[1]) {
+                    "get" -> {
+                        if (args.size < 3) {
+                            sender.sendMessage("Usage: /nsp coins get <player>")
+                            return true
+                        }
+                        val playerName = args[2]
+                        val coins = plugin.getCoinManager().getCoins(playerName)
+                        sender.sendMessage("$playerName のコイン数: $coins")
+                        return true
+                    }
+                    "add" -> {
+                        if (args.size < 4) {
+                            sender.sendMessage("Usage: /nsp coins add <player> <amount>")
+                            return true
+                        }
+                        val playerName = args[2]
+                        val amount = args[3].toIntOrNull()
+                        if (amount == null || amount <= 0) {
+                            sender.sendMessage("金額は正の整数で指定してください")
+                            return true
+                        }
+
+                        val success = plugin.getCoinManager().addCoins(playerName, amount)
+                        if (success) {
+                            val newCoins = plugin.getCoinManager().getCoins(playerName)
+                            sender.sendMessage("$playerName に $amount コインを追加しました。現在のコイン数: $newCoins")
+
+                            // オンラインプレイヤーに通知
+                            val player = Bukkit.getPlayerExact(playerName)
+                            player?.sendMessage("§a$amount コインを受け取りました！")
+                        } else {
+                            sender.sendMessage("コインの追加に失敗しました")
+                        }
+                        return true
+                    }
+                    "remove" -> {
+                        if (args.size < 4) {
+                            sender.sendMessage("Usage: /nsp coins remove <player> <amount>")
+                            return true
+                        }
+                        val playerName = args[2]
+                        val amount = args[3].toIntOrNull()
+                        if (amount == null || amount <= 0) {
+                            sender.sendMessage("金額は正の整数で指定してください")
+                            return true
+                        }
+
+                        val success = plugin.getCoinManager().removeCoins(playerName, amount)
+                        if (success) {
+                            val newCoins = plugin.getCoinManager().getCoins(playerName)
+                            sender.sendMessage("$playerName から $amount コインを消費しました。現在のコイン数: $newCoins")
+
+                            // オンラインプレイヤーに通知
+                            val player = Bukkit.getPlayerExact(playerName)
+                            player?.sendMessage("§c$amount コインを消費しました")
+                        } else {
+                            sender.sendMessage("コインの消費に失敗しました（コインが不足している可能性があります）")
+                        }
+                        return true
+                    }
+                    "set" -> {
+                        if (args.size < 4) {
+                            sender.sendMessage("Usage: /nsp coins set <player> <amount>")
+                            return true
+                        }
+                        val playerName = args[2]
+                        val amount = args[3].toIntOrNull()
+                        if (amount == null || amount < 0) {
+                            sender.sendMessage("金額は0以上の整数で指定してください")
+                            return true
+                        }
+
+                        val success = plugin.getCoinManager().setCoins(playerName, amount)
+                        if (success) {
+                            sender.sendMessage("$playerName のコイン数を $amount に設定しました")
+
+                            // オンラインプレイヤーに通知
+                            val player = Bukkit.getPlayerExact(playerName)
+                            player?.sendMessage("§eあなたのコイン数が $amount に設定されました")
+                        } else {
+                            sender.sendMessage("コインの設定に失敗しました")
+                        }
+                        return true
+                    }
+                    else -> {
+                        sender.sendMessage("Usage: /nsp coins <get|add|set|remove> <player> [amount]")
+                        return true
+                    }
+                }
+            }
             else -> {
                 sender.sendMessage("Unknown sub command: ${args[0]}")
                 return true
