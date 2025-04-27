@@ -15,6 +15,16 @@ plugins {
     java
     kotlin("jvm") version "1.9.20"
     id("com.diffplug.spotless") version "6.0.0"
+    // IDEプロジェクトファイル生成用プラグイン
+    idea
+}
+
+// IDEAプロジェクト設定
+idea {
+    module {
+        isDownloadJavadoc = true
+        isDownloadSources = true
+    }
 }
 
 group = "org.com.syun0521.minecraft"
@@ -28,11 +38,18 @@ repositories {
     maven("https://oss.sonatype.org/content/groups/public/") {
         name = "sonatype"
     }
+    maven("https://jitpack.io") {
+        name = "jitpack"
+    }
 }
 
 dependencies {
     compileOnly("org.spigotmc:spigot-api:$spigot_version")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.json:json:20210307")
+    
+    // BukkitKotlinライブラリの代わりに、Kotlin拡張機能を直接使用
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.20")
 }
 
 val targetJavaVersion = 8
