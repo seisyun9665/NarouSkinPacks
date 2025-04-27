@@ -7,6 +7,8 @@ Minecraftサーバー用プラグインで、プレイヤーが歩くたびに�
 - プレイヤーごとに異なるパーティクルエフェクトを設定可能
 - 豊富なパーティクル設定オプション（パーティクルの種類、量、速度など）
 - コマンドを使用した簡単な設定
+- コイン管理システム
+- HTTPベースのAPI機能（オプション）
 
 ## 要件
 
@@ -25,10 +27,15 @@ Minecraftサーバー用プラグインで、プレイヤーが歩くたびに�
 
 - `/nsp reload` - プラグインの設定をリロードします
 - `/nsp setuseskin <player> [<skinname>]` - 指定したプレイヤーにスキンを設定します。skinname を省略すると、スキン設定を解除します
+- `/nsp coins check <player>` - プレイヤーのコイン残高を確認します
+- `/nsp coins add <player> <amount>` - プレイヤーにコインを追加します
+- `/nsp coins remove <player> <amount>` - プレイヤーからコインを削除します
+- `/nsp coins set <player> <amount>` - プレイヤーのコイン残高を設定します
 
 ### 権限
 
 - `nsp.nsp` - 基本コマンド実行権限
+- `nsp.admin` - 管理者向けコマンド実行権限
 
 ## 設定
 
@@ -39,6 +46,16 @@ Minecraftサーバー用プラグインで、プレイヤーが歩くたびに�
 players:
   playername:
     onStep: "skinname"
+
+# API設定
+api:
+  enabled: false
+  port: 8080
+  apiKey: "your-secret-api-key"
+
+# コイン設定
+coins:
+  enabled: true
 ```
 
 ### skins.yml
@@ -62,6 +79,8 @@ skins:
 
 - `shining` - END_RODパーティクルを使用した輝くエフェクト
 - `redstone` - REDSTONEパーティクルを使用した赤いエフェクト
+- `magic` - SPELL_WITCHパーティクルを使用した魔法のエフェクト
+- `heart` - HEARTパーティクルを使用したハートエフェクト
 
 ## カスタムスキンの作成
 
@@ -80,13 +99,25 @@ skins:
 ./gradlew build
 ```
 
+### 開発スクリプト
+
+本プロジェクトには開発、デプロイ、テストを効率化するための様々なスクリプトが含まれています。詳細は[scripts/README.md](scripts/README.md)を参照してください。
+
+**主なスクリプト：**
+
+- `scripts/deploy-and-verify.sh` - ビルド、デプロイ、検証を一括で行う
+- `scripts/deploy-narou.sh` - ビルドしたプラグインをリモートサーバーにデプロイ
+- `scripts/mc-console.sh` - リモートのMinecraftサーバーコンソールに接続
+- `scripts/start-mc-server.sh` - リモートサーバーを起動
+- `scripts/verify-plugin.sh` - プラグインの動作検証を支援
+
 ### プラグインのデプロイ
 
 開発環境からリモートのMinecraftサーバーにプラグインを自動デプロイするためのスクリプトが用意されています。
 
 ```bash
 # デプロイスクリプトの実行
-./deploy-narou.sh
+./scripts/deploy-narou.sh
 ```
 
 デプロイスクリプトは以下の処理を行います：
@@ -95,6 +126,124 @@ skins:
 - サーバー状態の検出と適切なフィードバックの提供
 
 ※スクリプトを使用する前に、SSH接続設定と対象サーバーのパスを適切に設定してください。
+
+## リモート接続方法
+
+リモートMinecraftサーバーに接続・デプロイするためのガイドラインです。
+
+### SSH接続設定
+
+1. SSH鍵の設定
+   ```bash
+   # SSH鍵の生成（未作成の場合）
+   ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+   
+   # SSH鍵をリモートサーバーに登録
+   ssh-copy-id -i ~/.ssh/id_rsa.pub username@remote_host
+   ```
+
+2. SSH設定ファイルの作成（~/.ssh/config）
+   ```
+   Host minecraft-server
+     HostName xxx.xxx.xxx.xxx
+     User username
+     Port 22
+     IdentityFile ~/.ssh/id_rsa
+   ```
+
+### デプロイスクリプトの設定
+
+`deploy-narou.sh`スクリプトを使用する前に、以下の変数を環境に合わせて修正してください：
+
+```bash
+# 設定
+REMOTE_USER="username"      # リモートサーバーのユーザー名
+REMOTE_HOST="xxx.xxx.xxx.xxx"  # リモートサーバーのIPアドレス
+SSH_KEY="~/.ssh/id_rsa"     # SSH鍵のパス
+LOCAL_JAR="build/libs/NarouSkinPacks-1.0.jar"  # ローカルのJARパス
+REMOTE_PATH="/path/to/server/plugins/NarouSkinPacks-1.0.jar"  # リモート配置先
+BACKUP_DIR="/path/to/backups/plugins"  # バックアップディレクトリ
+```
+
+### 簡単アクセス用スクリプト
+
+本プロジェクトでは、開発効率を向上させるための以下のスクリプトを提供しています：
+
+```bash
+# リモートサーバーへの接続とプラグイン検証を一括で行う
+./scripts/deploy-and-verify.sh
+
+# サーバーコンソールに直接接続
+./scripts/mc-console.sh
+
+# リモートサーバーの起動
+./scripts/start-mc-server.sh [JARファイル名] [メモリ量]
+
+# プラグインの動作検証のみを行う
+./scripts/verify-plugin.sh
+```
+
+### CI/CD自動化
+
+本プロジェクトはGitHub Actionsによる自動ビルド・デプロイに対応しています。設定には以下のシークレットが必要です：
+
+- `SSH_PRIVATE_KEY`: SSHプライベートキー
+- `KNOWN_HOSTS`: サーバーのknown_hosts情報
+- `REMOTE_USER`: リモートユーザー名
+- `REMOTE_HOST`: リモートホスト名
+- `REMOTE_PATH`: リモートプラグインのパス
+- `BACKUP_DIR`: バックアップディレクトリのパス
+
+コミットをpushするかGitHub上で手動トリガーすることで、自動的にビルドとデプロイが実行されます。
+
+### サーバー管理コマンド
+
+リモートサーバーに接続後、以下のコマンドでMinecraftサーバーを管理できます：
+
+```bash
+# サーバーの起動
+./start-minecraft.sh
+
+# 実行中のサーバーセッション一覧
+screen -list
+
+# サーバーコンソールに接続
+screen -r <セッション名>
+
+# サーバーコンソールから切断（サーバーは実行したまま）
+# Ctrl+A, D キーを順に押す
+```
+
+## プロジェクト構造
+
+プロジェクトの主要な構造と重要なファイルは以下の通りです：
+
+```
+NarouSkinPacks/
+├── src/main/
+│   ├── kotlin/org/com/syun0521/minecraft/narouskinpacks/
+│   │   ├── NarouSkinPacks.kt       # メインプラグインクラス
+│   │   ├── Command.kt              # コマンド処理
+│   │   ├── CustomConfig.kt         # 設定管理
+│   │   ├── NSPCommandTabCompleter.kt # タブ補完
+│   │   ├── api/                    # HTTP API関連
+│   │   ├── coin/                   # コイン管理システム
+│   │   ├── events/                 # イベント処理
+│   │   └── skin/                   # スキン関連
+│   └── resources/
+│       ├── config.yml              # 基本設定
+│       ├── skins.yml               # スキン定義
+│       └── plugin.yml              # プラグイン定義
+├── scripts/                        # 開発・デプロイスクリプト
+└── .cursor/rules/                  # Cursor AIの理解を助けるルール
+```
+
+## 開発方針
+
+- コードはKotlinのベストプラクティスに従って記述する
+- 機能ごとに適切なパッケージに分離する
+- テスト容易性を考慮した設計にする
+- スクリプトを活用して開発効率を向上させる
 
 ## 問題報告
 

@@ -1,5 +1,99 @@
 ---
-description:
-globs:
-alwaysApply: false
+description: 
+globs: 
+alwaysApply: true
 ---
+# NarouSkinPacks 開発ガイド
+
+このガイドは、NarouSkinPacksプロジェクトの新規開発者向けに、Cursorを使った開発の始め方を説明します。
+
+## Cursor Rulesについて
+
+Cursor Rulesは、プロジェクトのナビゲーションと理解を助けるためのガイドです。`.cursor/rules`ディレクトリ内の`.mdc`ファイルにより、AIがプロジェクトの構造や規則を理解しやすくなります。
+
+## プロジェクト入門
+
+NarouSkinPacksの開発を始めるにあたり、以下のルールファイルを順に読むことをお勧めします：
+
+1. [プロジェクト概要](mdc:.cursor/rules/01-project-overview.mdc) - 主要ファイルとプロジェクト構造
+2. [主要クラスの説明](mdc:.cursor/rules/02-main-classes.mdc) - 各クラスの役割と機能
+3. [設定ファイル構造](mdc:.cursor/rules/03-config-structure.mdc) - 設定ファイルの形式と使い方
+4. [スキンシステム](mdc:.cursor/rules/04-skin-system.mdc) - スキン機能の実装詳細
+5. [コマンドシステム](mdc:.cursor/rules/05-command-system.mdc) - コマンドの実装と使用方法
+6. [プロジェクトアーキテクチャ](mdc:.cursor/rules/06-architecture.mdc) - アーキテクチャの詳細な説明
+7. [コーディングスタンダード](mdc:.cursor/rules/07-coding-standards.mdc) - コーディング規約とベストプラクティス
+8. [Kotlin開発ガイドライン](mdc:.cursor/rules/08-kotlin-specific-guidelines.mdc) - Kotlin特有の実装ガイドライン
+9. [AIアシスタントガイドライン](mdc:.cursor/rules/09-ai-assistant-guidelines.mdc) - AI活用の指針
+10. [リモート接続](mdc:.cursor/rules/10-remote-connection.mdc) - リモートサーバー接続とデプロイ方法
+
+## Cursorでの開発の始め方
+
+### 機能開発の流れ
+
+1. **理解**: まず関連するmdcファイルと実装コードを読み、現在の機能を理解します
+2. **設計**: 新機能のアーキテクチャを、既存のパターンに従って設計します
+3. **実装**: コーディングスタンダードに従ってコードを実装します
+4. **テスト**: 機能が正しく動作することを確認します
+5. **ドキュメント**: 必要に応じてREADMEやルールファイルを更新します
+
+### 頻出の開発タスク
+
+#### 新しいスキンタイプの追加
+
+1. [Skin.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/skin/Skin.kt)に新しいプロパティを追加
+2. [CustomConfig.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/CustomConfig.kt)のgetSkinメソッドを更新
+3. 新しいイベントハンドラクラスを作成（必要な場合）
+4. [skins.yml](mdc:src/main/resources/skins.yml)にデフォルト設定を追加
+
+#### 新しいコマンドの追加
+
+1. [Command.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/Command.kt)のwhen式に新しいコマンド分岐を追加
+2. [NSPCommandTabCompleter.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/NSPCommandTabCompleter.kt)にタブ補完を追加
+3. 必要に応じて[plugin.yml](mdc:src/main/resources/plugin.yml)を更新
+
+### 開発環境のセットアップとスクリプト活用
+
+#### 開発環境の準備
+
+1. プロジェクトをクローンする
+   ```bash
+   git clone https://github.com/yourusername/NarouSkinPacks.git
+   cd NarouSkinPacks
+   ```
+
+2. SSHキーを設定する（リモートサーバーにデプロイする場合）
+   ```bash
+   chmod 600 ~/.ssh/ssh-key-2021-11-26.key
+   ```
+
+3. 初回ビルドを実行
+   ```bash
+   ./gradlew build
+   ```
+
+#### 便利なスクリプト
+
+[scripts/](mdc:scripts)ディレクトリに、開発効率を向上させるためのスクリプトが用意されています：
+
+- [deploy-and-verify.sh](mdc:scripts/deploy-and-verify.sh) - ビルド、デプロイ、検証を一括実行
+- [deploy-narou.sh](mdc:scripts/deploy-narou.sh) - プラグインをリモートサーバーにデプロイ
+- [mc-console.sh](mdc:scripts/mc-console.sh) - サーバーコンソールに接続
+- [start-mc-server.sh](mdc:scripts/start-mc-server.sh) - リモートサーバーを起動
+- [verify-plugin.sh](mdc:scripts/verify-plugin.sh) - プラグインの動作検証
+
+スクリプトの詳細は[scripts/README.md](mdc:scripts/README.md)を参照してください。
+
+## Cursorでのコード検索・ナビゲーション
+
+- **ファイル間ジャンプ**: mdcファイル内のリンクをクリックでファイルを開く
+- **機能検索**: AIに「スキンの適用ロジックはどこにありますか？」などと質問
+- **コード理解**: 選択したコードについてAIに説明を求める
+
+## トラブルシューティング
+
+特定の問題に直面した場合、AIにその状況を説明してください。例えば：
+- 「スキンを適用する際にnullエラーが発生します」
+- 「このプラグインがPaperサーバーで動作しない理由は？」
+- 「リモートサーバーへのデプロイに失敗します」
+
+AIは既存のコードベースの理解に基づいて回答します。
