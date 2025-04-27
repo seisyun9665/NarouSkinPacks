@@ -54,3 +54,6 @@ hs_err_pid*
 # Minecraft server/test files
 server/
 run/ 
+memo.md
+dependencies.txt
+gradlew
