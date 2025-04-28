@@ -33,11 +33,13 @@ class NarouSkinPacks : JavaPlugin(), Listener {
 
         // API設定の取得
         val apiPort = pluginConfig?.getInt("api.port", 8080) ?: 8080
-        val apiKey = pluginConfig?.getString("api.key", "your-api-key") ?: "your-api-key"
+        val apiKey = pluginConfig?.getString("api.apiKey", "your-api-key") ?: "your-api-key"
+        val apiEnabled = pluginConfig?.getBoolean("api.enabled", false) ?: false
 
         // HTTPサーバーの初期化と起動
-        if (pluginConfig?.getBoolean("api.enabled", false) == true) {
+        if (apiEnabled) {
             try {
+                logger.info("APIサーバーを初期化しています...")
                 httpApiServer = HttpApiServer(this, coinManager!!, apiPort, apiKey)
                 httpApiServer?.start()
                 logger.info("HTTP API Server started on port $apiPort")
@@ -45,6 +47,8 @@ class NarouSkinPacks : JavaPlugin(), Listener {
                 logger.severe("Failed to start HTTP API Server: ${e.message}")
                 e.printStackTrace()
             }
+        } else {
+            logger.info("API設定が無効化されているため、APIサーバーは起動しません")
         }
     }
 
@@ -56,12 +60,10 @@ class NarouSkinPacks : JavaPlugin(), Listener {
 
     private fun loadConfigs() {
         // メイン設定ファイルの読み込み
-        pluginConfig = CustomConfig(this, "config.yml")
-        pluginConfig?.saveDefaultConfig()
+        pluginConfig = CustomConfig(this)
 
         // スキン設定ファイルの読み込み
         skinConfig = CustomConfig(this, "skins.yml")
-        skinConfig?.saveDefaultConfig()
     }
 
     fun reloadAllConfig() {

@@ -6,6 +6,10 @@ import org.com.syun0521.minecraft.narouskinpacks.skin.Skin
 import java.io.File
 import java.io.IOException
 
+/**
+ * YAMLファイルの読み込みと操作を行うクラス
+ * コンストラクタ内で自動的に設定ファイルを読み込みます
+ */
 class CustomConfig {
     private var config: FileConfiguration? = null
     private val configFile: File
@@ -18,6 +22,7 @@ class CustomConfig {
         configFile = File(directory, this.file)
         makeDirectory(directory)
         makeFile(configFile)
+        reloadConfig() // インスタンス化時に設定を読み込む
     }
 
     @JvmOverloads
@@ -26,6 +31,7 @@ class CustomConfig {
         this.file = fileName
         configFile = File(plugin.dataFolder, file)
         makeFile(configFile)
+        reloadConfig() // インスタンス化時に設定を読み込む
     }
 
     constructor(plugin: org.bukkit.plugin.Plugin, configFile: File) {
@@ -33,6 +39,7 @@ class CustomConfig {
         this.file = configFile.name
         this.configFile = configFile
         makeFile(configFile)
+        reloadConfig() // インスタンス化時に設定を読み込む
     }
 
     constructor(plugin: org.bukkit.plugin.Plugin, fileName: String, resource: String?) {
@@ -41,7 +48,10 @@ class CustomConfig {
 
         configFile = File(plugin.dataFolder, this.file)
 
-        if (configFile.exists()) return
+        if (configFile.exists()) {
+            reloadConfig() // 既存ファイルがある場合は設定を読み込む
+            return
+        }
 
         try {
             plugin.getResource(resource)?.copyTo(configFile.outputStream())
@@ -49,6 +59,7 @@ class CustomConfig {
             plugin.logger.info("Can not make the default file $resource")
         }
         makeFile(configFile)
+        reloadConfig() // インスタンス化時に設定を読み込む
     }
 
     constructor(plugin: org.bukkit.plugin.Plugin, fileName: String, directory: File, resource: String?) {
@@ -56,7 +67,10 @@ class CustomConfig {
         this.file = fileName
         configFile = File(directory, this.file)
 
-        if (configFile.exists()) return
+        if (configFile.exists()) {
+            reloadConfig() // 既存ファイルがある場合は設定を読み込む
+            return
+        }
 
         makeDirectory(directory)
         try {
@@ -65,6 +79,7 @@ class CustomConfig {
             plugin.logger.info("Can not make the default file $resource")
         }
         makeFile(configFile)
+        reloadConfig() // インスタンス化時に設定を読み込む
     }
 
     fun saveDefaultConfig() {
