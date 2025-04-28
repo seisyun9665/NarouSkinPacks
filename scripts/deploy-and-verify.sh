@@ -3,6 +3,17 @@
 # NarouSkinPacksプラグインのデプロイと検証スクリプト
 # Deploy and verify NarouSkinPacks plugin
 
+# 設定（環境変数があれば利用、なければデフォルト値）
+REMOTE_USER=${REMOTE_USER:-"opc"}
+REMOTE_HOST=${REMOTE_HOST:-"152.69.192.181"}
+SSH_KEY=${SSH_KEY:-"~/.ssh/ssh-key-2021-11-26.key"}
+LOCAL_JAR=${LOCAL_JAR:-"build/libs/NarouSkinPacks-1.0.jar"}
+SERVERS_BASE_DIR="/home/opc/servers"
+BACKUP_DIR=${BACKUP_DIR:-"/home/opc/backups/plugins"}
+
+# タイムスタンプ
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+
 # 色付きメッセージ用の設定
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -10,26 +21,36 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# SSH接続設定
-REMOTE_USER="opc"
-REMOTE_HOST="152.69.192.181"
-SSH_KEY="~/.ssh/ssh-key-2021-11-26.key"
+# SSH接続方法の選択（CI環境と通常環境の両方に対応）
+if [ -n "$CI" ]; then
+    # CI環境ではssh直接実行
+    SSH_CMD="ssh $REMOTE_USER@$REMOTE_HOST"
+    SCP_CMD="scp"
+else
+    # 通常環境ではSSHキーを使用
+    SSH_CMD="ssh -i $SSH_KEY $REMOTE_USER@$REMOTE_HOST"
+    SCP_CMD="scp -i $SSH_KEY"
+fi
 
-# エラー表示関数
+# ユーティリティ関数
+function step() {
+  echo -e "${BLUE}=== $1 ===${NC}"
+}
+
 function error() {
   echo -e "${RED}エラー: $1${NC}"
   exit 1
 }
 
-# 成功表示関数
 function success() {
   echo -e "${GREEN}$1${NC}"
 }
 
-# 警告表示関数
 function warning() {
   echo -e "${YELLOW}$1${NC}"
 }
+
+step "NarouSkinPacks更新処理を開始します"
 
 # 1. プラグインのビルド
 step "プラグインをビルドしています"
@@ -40,41 +61,93 @@ if [ $? -ne 0 ]; then
 fi
 
 # JARファイルの存在確認
-if [ ! -f "build/libs/NarouSkinPacks-1.0.jar" ]; then
-  error "ビルド成果物が見つかりません"
+if [ ! -f "$LOCAL_JAR" ]; then
+  error "ビルド成果物($LOCAL_JAR)が見つかりません"
 fi
 
 success "ビルドが完了しました"
 
+# プラグインのデプロイ確認
+read -p "ビルドしたプラグインをリモートサーバーにデプロイしますか？ (y/n): " DEPLOY_CONFIRM
+
 if [ "$DEPLOY_CONFIRM" = "y" ] || [ "$DEPLOY_CONFIRM" = "Y" ]; then
-  # バックアップ作成
-  echo -e "${BLUE}既存のプラグインをバックアップしています...${NC}"
-  TIMESTAMP=$(date +"%Y%m%d%H%M%S")
-  $SSH_CMD "mkdir -p $REMOTE_PLUGINS_DIR/backups && \
-    if [ -f $REMOTE_PLUGINS_DIR/NarouSkinPacks.jar ]; then \
-      cp $REMOTE_PLUGINS_DIR/NarouSkinPacks.jar $REMOTE_PLUGINS_DIR/backups/NarouSkinPacks-$TIMESTAMP.jar; \
-    fi"
+  # 利用可能なサーバーディレクトリを検索
+  step "利用可能なMinecraftサーバーを検索しています"
+  SERVER_DIRS=()
+  i=0
+
+  # サーバーディレクトリのみを取得 (spigot.jarまたはpaper.jarがあるディレクトリを検索)
+  while read -r line; do
+    SERVER_DIRS[$i]="$line"
+    i=$((i+1))
+  done < <($SSH_CMD "find $SERVERS_BASE_DIR -maxdepth 2 -name 'spigot*.jar' -o -name 'paper*.jar' | grep -v '/scripts/' | grep -v '/backup/' | sort | xargs -I{} dirname {} | xargs -I{} basename {}")
+
+  # サーバーが見つからない場合
+  if [ ${#SERVER_DIRS[@]} -eq 0 ]; then
+    error "Minecraftサーバーが見つかりませんでした"
+  fi
+
+  # サーバーリストを表示
+  echo -e "${YELLOW}利用可能なサーバー:${NC}"
+  for i in "${!SERVER_DIRS[@]}"; do
+    echo -e "$((i+1)). ${SERVER_DIRS[$i]}"
+  done
+
+  # サーバー選択
+  echo -e "${BLUE}デプロイ先サーバーを選択してください (1-${#SERVER_DIRS[@]}):${NC}"
+  read -p "> " SERVER_CHOICE
+
+  # 選択の検証
+  if ! [[ "$SERVER_CHOICE" =~ ^[0-9]+$ ]] || [ "$SERVER_CHOICE" -lt 1 ] || [ "$SERVER_CHOICE" -gt ${#SERVER_DIRS[@]} ]; then
+    error "無効な選択です"
+  fi
+
+  # 選択されたサーバー
+  SELECTED_SERVER=${SERVER_DIRS[$SERVER_CHOICE-1]}
+  REMOTE_SERVER_DIR="$SERVERS_BASE_DIR/$SELECTED_SERVER"
+  REMOTE_PLUGINS_DIR="$REMOTE_SERVER_DIR/plugins"
+  REMOTE_PATH="$REMOTE_PLUGINS_DIR/NarouSkinPacks.jar"
+
+  echo -e "${YELLOW}選択されたサーバー: $SELECTED_SERVER${NC}"
+  echo -e "${YELLOW}リモートパス: $REMOTE_PATH${NC}"
   
-  # JARファイルのアップロード
-  echo -e "${BLUE}プラグインをアップロードしています...${NC}"
-  scp -i "$SSH_KEY" "$PLUGIN_JAR_PATH" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PLUGINS_DIR/NarouSkinPacks.jar"
-  
-  if [ $? -ne 0 ]; then
-    echo -e "${RED}エラー: プラグインのアップロードに失敗しました${NC}"
-    exit 1
+  # 既存のプラグインの確認とバックアップ
+  step "既存のプラグインを確認しています"
+  PLUGIN_EXISTS=$($SSH_CMD "[ -f $REMOTE_PATH ] && echo 'true' || echo 'false'")
+
+  if [ "$PLUGIN_EXISTS" = "true" ]; then
+    step "既存のプラグインをバックアップしています"
+    $SSH_CMD "mkdir -p $BACKUP_DIR && cp $REMOTE_PATH $BACKUP_DIR/NarouSkinPacks-$TIMESTAMP.jar"
+    if [ $? -eq 0 ]; then
+      success "プラグインのバックアップが完了しました"
+    else
+      warning "プラグインのバックアップに失敗しました"
+    fi
+  else
+    warning "既存のプラグインが見つかりません。新規インストールを行います。"
   fi
   
-  echo -e "${GREEN}プラグインのデプロイが完了しました${NC}"
+  # JARファイルのアップロード
+  step "プラグインをアップロードしています"
+  $SSH_CMD "mkdir -p $REMOTE_PLUGINS_DIR"
+  $SCP_CMD "$LOCAL_JAR" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH"
+  
+  if [ $? -ne 0 ]; then
+    error "プラグインのアップロードに失敗しました"
+  fi
+  
+  success "プラグインのデプロイが完了しました"
 else
-  echo -e "${YELLOW}デプロイをスキップしました${NC}"
+  warning "デプロイをスキップしました"
+  exit 0
 fi
 
 # サーバー起動確認
-echo -e "${BLUE}Minecraftサーバーの状態を確認しています...${NC}"
-SERVER_RUNNING=$($SSH_CMD "screen -list | grep -c minecraft")
+step "Minecraftサーバーの状態を確認しています"
+SERVER_RUNNING=$($SSH_CMD "ps aux | grep -i 'java.*$SELECTED_SERVER' | grep -v grep | wc -l")
 
 if [ "$SERVER_RUNNING" -eq 0 ]; then
-  echo -e "${YELLOW}Minecraftサーバーが実行されていません${NC}"
+  warning "Minecraftサーバーが実行されていません"
   read -p "サーバーを起動しますか? (y/n): " START_SERVER
   
   if [ "$START_SERVER" = "y" ] || [ "$START_SERVER" = "Y" ]; then
@@ -83,43 +156,51 @@ if [ "$SERVER_RUNNING" -eq 0 ]; then
     echo -e "${YELLOW}サーバーの起動を待っています...（15秒）${NC}"
     sleep 15
   else
-    echo -e "${YELLOW}サーバー起動をスキップしました。プラグインの検証はできません。${NC}"
+    warning "サーバー起動をスキップしました。プラグインの検証はできません。"
     exit 0
   fi
 fi
 
-echo -e "${GREEN}Minecraftサーバーが実行中です${NC}"
+success "Minecraftサーバーが実行中です"
 
 # プラグインのテスト手順の表示
-echo -e "${BLUE}=== プラグインのテスト手順 ===${NC}"
+step "プラグインのテスト手順"
 echo -e "${YELLOW}1. サーバーにログインする${NC}"
 echo -e "${YELLOW}2. 以下のコマンドを実行して機能を確認:${NC}"
 echo "   - /nsp reload - プラグインの再読み込み"
 echo "   - /nsp setuseskin <プレイヤー名> <スキン名> - プレイヤーのスキンを設定"
 echo "   - /nsp coins check <プレイヤー名> - プレイヤーのコイン残高を確認"
+echo "   - HTTP APIテスト用に以下のコマンドを実行:"
+echo "     curl -X POST -H \"Content-Type: application/json\" -H \"X-API-Key: YOUR_API_KEY\" \\"
+echo "       -d '{\"playerName\":\"seisyun\",\"coin\":100,\"transactionId\":\"$(date +%s)\"}' \\"
+echo "       http://localhost:8080/api/purchase/notify"
 echo ""
 
 # Minecraftコンソールへの接続
 read -p "サーバーコンソールに接続しますか? (y/n): " CONNECT_CONSOLE
 
 if [ "$CONNECT_CONSOLE" = "y" ] || [ "$CONNECT_CONSOLE" = "Y" ]; then
-  echo -e "${BLUE}サーバーコンソールに接続しています...${NC}"
+  step "サーバーコンソールに接続しています"
   echo -e "${YELLOW}コンソールから抜けるには Ctrl+A, D を押してください${NC}"
   
   # 実行中のセッション名を取得
-  SESSION_NAME=$($SSH_CMD "screen -list | grep minecraft | grep -o '[0-9]*\.minecraft'")
+  SESSION_NAME=$($SSH_CMD "screen -list | grep -o '[0-9]*\.$SELECTED_SERVER' | head -1")
   
   if [ -z "$SESSION_NAME" ]; then
-    echo -e "${RED}エラー: Minecraftセッションが見つかりません${NC}"
-    exit 1
+    warning "セッション名が見つかりません。すべてのセッションを確認します..."
+    SESSION_NAME=$($SSH_CMD "screen -list | grep -o '[0-9]*\.[a-zA-Z0-9]*' | grep -v '^[0-9]*\.$' | head -1")
+    
+    if [ -z "$SESSION_NAME" ]; then
+      error "Minecraftセッションが見つかりません"
+    fi
   fi
   
   # コンソールに接続
   $SSH_CMD -t "screen -r $SESSION_NAME"
   
-  echo -e "${GREEN}コンソール接続を終了しました${NC}"
+  success "コンソール接続を終了しました"
 else
-  echo -e "${YELLOW}コンソール接続をスキップしました${NC}"
+  warning "コンソール接続をスキップしました"
 fi
 
-echo -e "${GREEN}デプロイと検証プロセスが完了しました${NC}" 
+success "デプロイと検証プロセスが完了しました" 
