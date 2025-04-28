@@ -17,6 +17,10 @@ org.com.syun0521.minecraft.narouskinpacks/
 ├── CustomConfig.kt      # 設定管理
 ├── events/              # イベント処理
 │   └── PlayerMoveHandler.kt  # プレイヤー移動処理
+├── coin/                # コイン管理
+│   └── CoinManager.kt   # コイン管理クラス
+├── api/                 # API関連
+│   └── HttpApiServer.kt # HTTP APIサーバー
 └── skin/                # スキン関連
     └── Skin.kt          # スキンデータモデル
 ```
@@ -49,6 +53,19 @@ NarouSkinPacksは以下のレイヤーで構成されています：
    - スキンパラメータの定義
    - データ整合性の確保
 
+6. **コイン管理システム** - [coin/CoinManager.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/coin/CoinManager.kt)
+   - プレイヤーのコイン残高管理
+   - コイン加算・減算処理
+
+7. **HTTP API** - [api/HttpApiServer.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/api/HttpApiServer.kt)
+   - 外部システムとの連携インターフェース
+   - REST APIの提供
+
+8. **デプロイシステム** - [deploy-narou.sh](mdc:deploy-narou.sh)
+   - リモートサーバーへの自動デプロイ
+   - バックアップ自動化
+   - サーバー状態検知
+
 ## データフロー
 
 1. プラグイン起動時：
@@ -64,6 +81,12 @@ NarouSkinPacksは以下のレイヤーで構成されています：
    - PlayerMoveHandler に処理を委譲
    - プレイヤー設定を CustomConfig から読み込み
    - スキン情報に基づきパーティクル表示
+
+4. デプロイプロセス：
+   - デプロイスクリプトがビルド成果物の存在を検証
+   - リモートサーバー上の既存プラグインをバックアップ
+   - 新しいプラグインをアップロード
+   - サーバー状態に応じたフィードバックを提供
 
 ## 拡張ポイント
 
@@ -81,3 +104,8 @@ NarouSkinPacksは以下のレイヤーで構成されています：
    - Skin クラスにプロパティを追加
    - CustomConfig#getSkin メソッドを更新
    - skins.yml に新しいパラメータを追加
+
+4. **API機能の拡張**：
+   - HttpApiServer に新しいエンドポイントを追加
+   - APIパラメータの検証ロジック追加
+   - レスポンス形式の拡張
