@@ -74,10 +74,15 @@ read -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   echo -e "${YELLOW}サーバーに /nsp reload コマンドを送信しています...${NC}"
-  ssh -i "$REMOTE_KEY" "$REMOTE_USER@$REMOTE_HOST" "cd /home/opc/servers/narouTest && echo 'nsp reload' > ./cache/console_input.txt"
+  # キャッシュディレクトリの存在を確認し、必要であれば作成
+  ssh -i "$REMOTE_KEY" "$REMOTE_USER@$REMOTE_HOST" "mkdir -p /home/opc/servers/narouTest/cache"
+  
+  # コンソール入力ファイルにコマンドを書き込む
+  ssh -i "$REMOTE_KEY" "$REMOTE_USER@$REMOTE_HOST" "echo 'nsp reload' > /home/opc/servers/narouTest/cache/console_input.txt"
   
   if [ $? -eq 0 ]; then
     echo -e "${GREEN}リロードコマンドの送信に成功しました${NC}"
+    echo -e "${YELLOW}注意: サーバーが実行中でない場合、コマンドは次回起動時に実行されます${NC}"
   else
     echo -e "${RED}リロードコマンドの送信に失敗しました${NC}"
   fi
