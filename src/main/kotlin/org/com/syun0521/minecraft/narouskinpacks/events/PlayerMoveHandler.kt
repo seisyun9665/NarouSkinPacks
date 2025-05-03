@@ -10,7 +10,7 @@ class PlayerMoveHandler(private val config: CustomConfig) {
         val player = event.player
         if (player.isOnGround) {
             val playerName = player.name
-            if (config.getConfig()?.contains("players.$playerName.onstep") == true) {
+            if (config.getConfig()?.contains("players.$playerName.currentSkin") == true) {
                 val from = event.from
                 val to = event.to
 
@@ -19,7 +19,7 @@ class PlayerMoveHandler(private val config: CustomConfig) {
                 direction.setY(0)
 
                 // Retrieve the skin name from the configuration for the player
-                val skinName = config.getConfig()?.getString("players.$playerName.onstep") ?: "shining"
+                val skinName = config.getConfig()?.getString("players.$playerName.currentSkin") ?: "shining"
                 val skin = config.getSkin(skinName)
 
                 val spawnLocation = player.location.add(direction.multiply(skin.forwardOffset))

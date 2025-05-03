@@ -20,16 +20,17 @@ class NarouSkinPacks : JavaPlugin(), Listener {
         saveDefaultConfig()
         loadConfigs()
 
+        // コイン管理クラスを先に初期化
+        coinManager = CoinManager(pluginConfig!!)
+
         // loadConfigs()の後はskinConfigはnullではなくなるため安全に非null型として扱う
         playerMoveHandler = PlayerMoveHandler(skinConfig!!)
 
         server.pluginManager.registerEvents(this, this)
 
+        // コマンド関連の初期化をCoinManager初期化の後に移動
         getCommand("nsp")?.executor = Command(this)
         getCommand("nsp")?.tabCompleter = NSPCommandTabCompleter(this)
-
-        // コイン管理クラスの初期化
-        coinManager = CoinManager(pluginConfig!!)
 
         // API設定の取得
         val apiPort = pluginConfig?.getInt("api.port", 8080) ?: 8080
@@ -78,16 +79,28 @@ class NarouSkinPacks : JavaPlugin(), Listener {
     }
 
     fun getSkinNames(): List<String> {
-        val skinSection = skinConfig?.getConfig()?.getConfigurationSection("skins")
-        return skinSection?.getKeys(false)?.toList() ?: listOf()
+        try {
+            val skinSection = skinConfig?.getConfig()?.getConfigurationSection("skins")
+            return skinSection?.getKeys(false)?.toList() ?: listOf()
+        } catch (e: Exception) {
+            logger.warning("スキン名の取得中にエラーが発生しました: ${e.message}")
+            return listOf()
+        }
     }
 
     fun getSkinConfig(): CustomConfig? {
+        if (skinConfig == null) {
+            logger.warning("スキン設定がまだ初期化されていません")
+        }
         return skinConfig
     }
 
     // コイン管理クラスのゲッター
     fun getCoinManager(): CoinManager {
         return coinManager ?: throw IllegalStateException("CoinManager is not initialized")
+    }
+
+    fun getPluginConfig(): CustomConfig {
+        return pluginConfig ?: throw IllegalStateException("PluginConfig is not initialized")
     }
 }

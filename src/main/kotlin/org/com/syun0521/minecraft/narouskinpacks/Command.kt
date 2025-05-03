@@ -4,8 +4,13 @@ import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
+import org.bukkit.entity.Player
+import org.com.syun0521.minecraft.narouskinpacks.shop.ShopGUI
 
 class Command(private val plugin: NarouSkinPacks) : CommandExecutor {
+    // ShopGUIインスタンスを遅延初期化
+    private val shopGUI by lazy { ShopGUI(plugin) }
+
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         if (args.isEmpty()) {
             sender.sendMessage("Usage: /nsp <sub command>")
@@ -30,7 +35,7 @@ class Command(private val plugin: NarouSkinPacks) : CommandExecutor {
                     return true
                 }
                 if (args.size == 2) {
-                    plugin.config.set("players.$playerName.onstep", null)
+                    plugin.getPluginConfig().set("players.$playerName.currentSkin", null)
                     sender.sendMessage("Skin for player $playerName has been removed.")
                     return true
                 }
@@ -40,7 +45,7 @@ class Command(private val plugin: NarouSkinPacks) : CommandExecutor {
                     sender.sendMessage("Invalid skin name. Valid options are: ${validSkins.joinToString(", ")}")
                     return true
                 }
-                plugin.config.set("players.$playerName.onstep", skinName)
+                plugin.getPluginConfig().set("players.$playerName.currentSkin", skinName)
                 sender.sendMessage("Skin for player $playerName set to $skinName")
                 return true
             }
@@ -140,6 +145,17 @@ class Command(private val plugin: NarouSkinPacks) : CommandExecutor {
                         return true
                     }
                 }
+            }
+            "shop" -> {
+                // プレイヤーからの実行のみ許可
+                if (sender !is Player) {
+                    sender.sendMessage("このコマンドはゲーム内プレイヤーのみが実行できます")
+                    return true
+                }
+
+                // ショップを開く
+                shopGUI.openShop(sender)
+                return true
             }
             else -> {
                 sender.sendMessage("Unknown sub command: ${args[0]}")

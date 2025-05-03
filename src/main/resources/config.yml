@@ -1,8 +1,9 @@
 # プレイヤーごとの設定されているスキン情報
 players:
   seisyun:
-    onStep: "Shining"
-    coins: 100 # 初期コイン数
+    currentSkin: "shining"
+    coins: 1000 # 初期コイン数
+    ownedSkins: ["shining"] # 所持しているスキンのリスト
 
 # APIサーバー設定
 api:
@@ -10,3 +11,14 @@ api:
   port: 8080
   apiKey: "YOUR_API_KEY" # 実際の環境では強力なAPIキーに変更してください
 
+# スキンショップ設定
+skinshop:
+  skins:
+    shining:
+      price: 200
+      display_item: "END_ROD"
+      description: "輝くパーティクルエフェクト"
+    redstone:
+      price: 150
+      display_item: "REDSTONE"
+      description: "赤いパーティクルエフェクト"
