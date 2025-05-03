@@ -24,7 +24,7 @@ class NarouSkinPacks : JavaPlugin(), Listener {
         coinManager = CoinManager(pluginConfig!!)
 
         // loadConfigs()の後はskinConfigはnullではなくなるため安全に非null型として扱う
-        playerMoveHandler = PlayerMoveHandler(skinConfig!!)
+        playerMoveHandler = PlayerMoveHandler(pluginConfig!!, skinConfig!!)
 
         server.pluginManager.registerEvents(this, this)
 
