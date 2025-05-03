@@ -1,7 +1,7 @@
 skins:
   shining:
     particle: "END_ROD"
-    type: "onStep"
+    type: "currentSkin"
     amount: 20
     x: 0.5
     y: 0.0
@@ -10,7 +10,7 @@ skins:
     forwardOffset: 5.0
   redstone:
     particle: "REDSTONE"
-    type: "onStep"
+    type: "currentSkin"
     amount: 20
     x: 0.5
     y: 0.0

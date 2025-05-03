@@ -200,7 +200,7 @@ class CustomConfig {
     fun getSkin(skinName: String): Skin {
         val skinSection = this.getConfig()?.getConfigurationSection("skins.$skinName")
         val particle = skinSection?.getString("particle") ?: "END_ROD"
-        val type = skinSection?.getString("type") ?: "onStep"
+        val type = skinSection?.getString("type") ?: "currentSkin"
         val amount = skinSection?.getInt("amount") ?: 1
         val x = skinSection?.getDouble("x") ?: 0.0
         val y = skinSection?.getDouble("y") ?: 0.0

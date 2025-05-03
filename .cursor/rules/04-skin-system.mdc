@@ -28,7 +28,7 @@ NarouSkinPacksのスキンシステムは、プレイヤーが歩いた時に表
 
 - `skinName` - スキンの識別子
 - `particle` - Minecraft のパーティクル種類
-- `type` - 発動タイプ（onStep など）
+- `type` - 発動タイプ（currentSkin など）
 - `amount` - パーティクルの量
 - `x`, `y`, `z` - パーティクルの広がり（オフセット）
 - `speed` - パーティクルの速度
@@ -42,7 +42,7 @@ NarouSkinPacksのスキンシステムは、プレイヤーが歩いた時に表
 skins:
   my_custom_skin:
     particle: "FLAME"
-    type: "onStep"
+    type: "currentSkin"
     amount: 30
     x: 0.3
     y: 0.1

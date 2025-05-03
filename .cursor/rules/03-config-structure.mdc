@@ -15,7 +15,7 @@ alwaysApply: true
 # プレイヤーごとの設定されているスキン情報
 players:
   playername:
-    onStep: "skinname"  # プレイヤーが歩いた時に表示するスキン
+    currentSkin: "skinname"  # プレイヤーが歩いた時に表示するスキン
 ```
 
 この設定は、Commandクラスのsetuseskinコマンドによって管理されます。
@@ -28,7 +28,7 @@ players:
 skins:
   skinname:
     particle: "END_ROD"  # パーティクルの種類（Minecraft のパーティクル名）
-    type: "onStep"       # 発動タイプ（現在は onStep のみ対応）
+    type: "currentSkin"       # 発動タイプ（現在は currentSkin のみ対応）
     amount: 20           # パーティクルの量
     x: 0.5               # X方向の広がり
     y: 0.0               # Y方向の広がり
