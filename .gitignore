@@ -57,3 +57,6 @@ run/
 memo.md
 dependencies.txt
 gradlew
+
+# テスト関連
+test.md
