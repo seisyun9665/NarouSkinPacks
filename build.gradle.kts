@@ -82,6 +82,8 @@ tasks.processResources {
 }
 
 tasks.jar {
+    archiveBaseName.set("NarouSkinPacks")
+    archiveVersion.set("")
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

@@ -7,7 +7,7 @@
 REMOTE_USER=${REMOTE_USER:-"opc"}
 REMOTE_HOST=${REMOTE_HOST:-"152.69.192.181"}
 SSH_KEY=${SSH_KEY:-"~/.ssh/ssh-key-2021-11-26.key"}
-LOCAL_JAR=${LOCAL_JAR:-"build/libs/NarouSkinPacks-1.0.jar"}
+LOCAL_JAR=${LOCAL_JAR:-"build/libs/NarouSkinPacks.jar"}
 SERVERS_BASE_DIR="/home/opc/servers"
 BACKUP_DIR=${BACKUP_DIR:-"/home/opc/backups/plugins"}
 
