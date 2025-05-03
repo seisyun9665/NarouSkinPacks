@@ -144,7 +144,12 @@ fi
 
 # サーバー起動確認
 step "Minecraftサーバーの状態を確認しています"
-SERVER_RUNNING=$($SSH_CMD "ps aux | grep -i 'java.*$SELECTED_SERVER' | grep -v grep | wc -l")
+# サーバー実行状態を確認する方法を改善
+SERVER_RUNNING=$($SSH_CMD "cd $REMOTE_SERVER_DIR && (screen -list | grep -q \"\.$SELECTED_SERVER\" && echo \"1\" || echo \"0\")")
+
+if [ "$SERVER_RUNNING" -eq 0 ]; then
+  SERVER_RUNNING=$($SSH_CMD "ps aux | grep -v grep | grep -i \"java.*server.*$SELECTED_SERVER\" | wc -l")
+fi
 
 if [ "$SERVER_RUNNING" -eq 0 ]; then
   warning "Minecraftサーバーが実行されていません"
