@@ -5,20 +5,39 @@ alwaysApply: true
 ---
 # 設定ファイル構造
 
-プラグインは以下の2つの主要な設定ファイルを使用します：
+プラグインは以下の主要な設定ファイルを使用します：
 
 ## config.yml
 
-[config.yml](mdc:src/main/resources/config.yml)は、プレイヤーごとのスキン設定を保存します。
+[config.yml](mdc:src/main/resources/config.yml)は、プレイヤーごとの設定やグローバル設定を保存します。
 
 ```yaml
 # プレイヤーごとの設定されているスキン情報
 players:
   playername:
     currentSkin: "skinname"  # プレイヤーが歩いた時に表示するスキン
+    coins: 1000              # プレイヤーの所持コイン数
+    ownedSkins: ["skinname"] # プレイヤーが所持しているスキンリスト
+
+# APIサーバー設定
+api:
+  enabled: false            # APIサーバーを有効にするか
+  port: 8080                # 使用するポート番号
+  apiKey: "YOUR_API_KEY"    # API認証用キー
+
+# スキンショップ設定
+skinshop:
+  skins:
+    skinname:
+      price: 200            # スキンの価格
+      display_item: "ITEM_NAME" # ショップでの表示アイテム
+      description: "スキンの説明" # スキンの説明文
 ```
 
-この設定は、Commandクラスのsetuseskinコマンドによって管理されます。
+この設定は、主に以下のクラスによって管理されます：
+- プレイヤースキン: `Command#setuseskin`
+- コイン管理: `CoinManager`
+- スキンショップ: `ShopGUI`
 
 ## skins.yml
 
@@ -28,7 +47,7 @@ players:
 skins:
   skinname:
     particle: "END_ROD"  # パーティクルの種類（Minecraft のパーティクル名）
-    type: "currentSkin"       # 発動タイプ（現在は currentSkin のみ対応）
+    type: "currentSkin"  # 発動タイプ（現在は currentSkin のみ対応）
     amount: 20           # パーティクルの量
     x: 0.5               # X方向の広がり
     y: 0.0               # Y方向の広がり

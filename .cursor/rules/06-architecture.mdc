@@ -19,6 +19,8 @@ org.com.syun0521.minecraft.narouskinpacks/
 │   └── PlayerMoveHandler.kt  # プレイヤー移動処理
 ├── coin/                # コイン管理
 │   └── CoinManager.kt   # コイン管理クラス
+├── shop/                # ショップ機能
+│   └── ShopGUI.kt       # ショップインターフェース
 ├── api/                 # API関連
 │   └── HttpApiServer.kt # HTTP APIサーバー
 └── skin/                # スキン関連
@@ -33,6 +35,7 @@ NarouSkinPacksは以下のレイヤーで構成されています：
    - Bukkit/Spigotプラグインフレームワークとの接続点
    - イベントリスナーの登録
    - プラグインのライフサイクル管理
+   - 設定形式の自動変換（onStep→currentSkin）
 
 2. **設定管理** - [CustomConfig.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/CustomConfig.kt)
    - YAML設定ファイルの読み込み・保存
@@ -48,6 +51,7 @@ NarouSkinPacksは以下のレイヤーで構成されています：
    - プレイヤーの移動イベント処理
    - スキン適用のロジック
    - パーティクル表示の実装
+   - 旧設定形式の互換性サポート
 
 5. **データモデル** - [skin/Skin.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/skin/Skin.kt)
    - スキンパラメータの定義
@@ -56,12 +60,18 @@ NarouSkinPacksは以下のレイヤーで構成されています：
 6. **コイン管理システム** - [coin/CoinManager.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/coin/CoinManager.kt)
    - プレイヤーのコイン残高管理
    - コイン加算・減算処理
+   - プレイヤーへの通知
 
-7. **HTTP API** - [api/HttpApiServer.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/api/HttpApiServer.kt)
+7. **ショップシステム** - [shop/ShopGUI.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/shop/ShopGUI.kt)
+   - インベントリベースのGUIインターフェース
+   - スキン選択と購入の処理
+   - プレイヤー所有スキン管理
+
+8. **HTTP API** - [api/HttpApiServer.kt](mdc:src/main/kotlin/org/com/syun0521/minecraft/narouskinpacks/api/HttpApiServer.kt)
    - 外部システムとの連携インターフェース
    - REST APIの提供
 
-8. **デプロイシステム** - [deploy-narou.sh](mdc:deploy-narou.sh)
+9. **デプロイシステム** - [deploy-and-verify.sh](mdc:scripts/deploy-and-verify.sh)
    - リモートサーバーへの自動デプロイ
    - バックアップ自動化
    - サーバー状態検知
@@ -70,23 +80,33 @@ NarouSkinPacksは以下のレイヤーで構成されています：
 
 1. プラグイン起動時：
    - NarouSkinPacks#onEnable で設定ファイルを読み込み
+   - 古い設定形式（onStep）から新しい形式（currentSkin）への自動変換
+   - コイン管理クラスの初期化（CoinManager）
    - イベントリスナーとコマンド登録
 
 2. コマンド実行時：
    - Command クラスがコマンドを処理
    - プレイヤー設定を CustomConfig を通じて保存
+   - 設定変更後は明示的に設定を保存（plugin.saveConfig()）
 
 3. プレイヤー移動時：
    - NarouSkinPacks#onPlayerMove がイベントを受け取る
    - PlayerMoveHandler に処理を委譲
-   - プレイヤー設定を CustomConfig から読み込み
+   - プレイヤー設定を CustomConfig から読み込み（新旧両形式に対応）
    - スキン情報に基づきパーティクル表示
 
-4. デプロイプロセス：
+4. ショップ操作時：
+   - ShopGUI#openShop でショップインターフェースを表示
+   - プレイヤーがアイテムをクリックすると対応するスキン処理を実行
+   - 所持済みスキンはクリックで選択、未所持スキンは購入処理
+   - コイン残高と所持スキンリストを更新
+
+5. デプロイプロセス：
    - デプロイスクリプトがビルド成果物の存在を検証
    - リモートサーバー上の既存プラグインをバックアップ
    - 新しいプラグインをアップロード
    - サーバー状態に応じたフィードバックを提供
+   - 設定ファイルの個別更新（update-config.sh）
 
 ## 拡張ポイント
 
@@ -105,7 +125,26 @@ NarouSkinPacksは以下のレイヤーで構成されています：
    - CustomConfig#getSkin メソッドを更新
    - skins.yml に新しいパラメータを追加
 
-4. **API機能の拡張**：
+4. **ショップ機能の拡張**：
+   - 新しいショップアイテムタイプの追加
+   - カテゴリ分類の実装
+   - 特別オファーやセール機能の追加
+
+5. **API機能の拡張**：
    - HttpApiServer に新しいエンドポイントを追加
    - APIパラメータの検証ロジック追加
    - レスポンス形式の拡張
+
+## 初期化順序
+
+プラグインの初期化は以下の順序で行われます：
+
+1. 設定ファイルの読み込み（loadConfigs()）
+2. 古い設定形式の変換（migrateOldConfig()）
+3. コイン管理クラスの初期化（CoinManager）
+4. プレイヤー移動ハンドラの初期化（PlayerMoveHandler）
+5. イベントリスナーの登録
+6. コマンド処理クラスの登録
+7. HTTPサーバーの初期化と起動（有効な場合）
+
+この順序は依存関係に基づいて最適化されており、特にコイン管理クラスはコマンド処理より先に初期化する必要があります。
