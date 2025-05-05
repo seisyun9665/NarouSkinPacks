@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
+import org.bukkit.event.inventory.InventoryDragEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.com.syun0521.minecraft.narouskinpacks.CustomConfig
@@ -33,6 +34,29 @@ class ShopGUI(private val plugin: NarouSkinPacks) : Listener {
     fun openShop(player: Player) {
         val inventory = Bukkit.createInventory(player, 27, "${ChatColor.GOLD}スキンショップ")
 
+        // コイン残高表示と利用可能なスキンを表示
+        updateShopContents(inventory, player)
+
+        // インベントリを開く
+        player.openInventory(inventory)
+        shopInventories[player] = inventory
+    }
+
+    /**
+     * ショップインベントリのコンテンツを更新する
+     */
+    private fun updateShopContents(inventory: Inventory, player: Player) {
+        // プレイヤーのコイン残高表示
+        updateCoinDisplay(inventory, player)
+
+        // 利用可能なスキンを表示
+        loadSkins(inventory, player)
+    }
+
+    /**
+     * ショップのコイン残高表示を更新する
+     */
+    private fun updateCoinDisplay(inventory: Inventory, player: Player) {
         // プレイヤーのコイン残高表示
         val coins = coinManager.getCoins(player.name)
         val infoItem = createInfoItem(
@@ -40,13 +64,6 @@ class ShopGUI(private val plugin: NarouSkinPacks) : Listener {
             listOf("${ChatColor.GRAY}スキンパックを購入するには", "${ChatColor.GRAY}アイテムをクリックしてください")
         )
         inventory.setItem(0, infoItem)
-
-        // 利用可能なスキンを表示
-        loadSkins(inventory, player)
-
-        // インベントリを開く
-        player.openInventory(inventory)
-        shopInventories[player] = inventory
     }
 
     /**
@@ -141,54 +158,65 @@ class ShopGUI(private val plugin: NarouSkinPacks) : Listener {
         // プレイヤーのショップインベントリかチェック
         if (inventory != shopInventories[player]) return
 
-        // クリックをキャンセル
+        // すべてのクリックをキャンセル（プレイヤーのインベントリを含む）
         event.isCancelled = true
 
-        val slot = event.slot
-        if (slot > 0) { // 情報アイテム以外
-            val clickedItem = event.currentItem ?: return
+        val clickedInventory = event.clickedInventory
 
-            // スキン名を取得
-            val skinName = ChatColor.stripColor(clickedItem.itemMeta?.displayName?.split(" ")?.get(0) ?: return)
-            val owned = clickedItem.itemMeta?.lore?.any { it.contains("購入済み") } == true
-            val price = pluginConfig.getInt("skinshop.skins.$skinName.price", 100)
+        // クリックしたのがショップインベントリではない場合は無視
+        if (clickedInventory != shopInventories[player]) return
 
-            if (owned) {
-                // 所有済みのスキンを選択
-                pluginConfig.set("players.${player.name}.currentSkin", skinName)
-                plugin.saveConfig()
-                player.sendMessage("${ChatColor.GREEN}スキン「$skinName」を選択しました。")
+        val clickedItem = event.currentItem ?: return
 
-                // GUIを更新
-                refreshShop(player)
-            } else {
-                // スキンを購入
-                val coins = coinManager.getCoins(player.name)
+        // メタデータがない場合は処理しない
+        val itemMeta = clickedItem.itemMeta ?: return
+        val displayName = itemMeta.displayName ?: return
 
-                if (coins >= price) {
-                    // 十分なコインがある場合
-                    val success = coinManager.removeCoins(player.name, price)
+        // スキン名を取得
+        val skinNameRaw = ChatColor.stripColor(displayName.split(" ").firstOrNull() ?: return)
 
-                    if (success) {
-                        // 購入したスキンを所有リストに追加
-                        val ownedSkins = pluginConfig.getStringList("players.${player.name}.ownedSkins").toMutableList()
-                        ownedSkins.add(skinName)
-                        pluginConfig.set("players.${player.name}.ownedSkins", ownedSkins)
+        // 有効なスキン名かチェック
+        val validSkinNames = plugin.getSkinNames()
+        if (!validSkinNames.contains(skinNameRaw)) {
+            return
+        }
 
-                        // 新しいスキンを選択状態にする
-                        pluginConfig.set("players.${player.name}.currentSkin", skinName)
-                        plugin.saveConfig()
+        val owned = itemMeta.lore?.any { it.contains("購入済み") } == true
+        val price = pluginConfig.getInt("skinshop.skins.$skinNameRaw.price", 100)
 
-                        player.sendMessage("${ChatColor.GREEN}スキン「$skinName」を${price}コインで購入しました。")
+        if (owned) {
+            // 所有済みのスキンを選択
+            pluginConfig.set("players.${player.name}.currentSkin", skinNameRaw)
+            player.sendMessage("${ChatColor.GREEN}スキン「$skinNameRaw」を選択しました。")
 
-                        // GUIを更新
-                        refreshShop(player)
-                    } else {
-                        player.sendMessage("${ChatColor.RED}購入処理中にエラーが発生しました。")
-                    }
+            // GUIを更新
+            refreshShop(player)
+        } else {
+            // スキンを購入
+            val coins = coinManager.getCoins(player.name)
+
+            if (coins >= price) {
+                // 十分なコインがある場合
+                val success = coinManager.removeCoins(player.name, price)
+
+                if (success) {
+                    // 購入したスキンを所有リストに追加
+                    val ownedSkins = pluginConfig.getStringList("players.${player.name}.ownedSkins").toMutableList()
+                    ownedSkins.add(skinNameRaw)
+                    pluginConfig.set("players.${player.name}.ownedSkins", ownedSkins)
+
+                    // 新しいスキンを選択状態にする
+                    pluginConfig.set("players.${player.name}.currentSkin", skinNameRaw)
+
+                    player.sendMessage("${ChatColor.GREEN}スキン「$skinNameRaw」を${price}コインで購入しました。")
+
+                    // GUIを更新
+                    refreshShop(player)
                 } else {
-                    player.sendMessage("${ChatColor.RED}コインが不足しています。必要コイン: $price, 所持コイン: $coins")
+                    player.sendMessage("${ChatColor.RED}購入処理中にエラーが発生しました。")
                 }
+            } else {
+                player.sendMessage("${ChatColor.RED}コインが不足しています。必要コイン: $price, 所持コイン: $coins")
             }
         }
     }
@@ -197,9 +225,19 @@ class ShopGUI(private val plugin: NarouSkinPacks) : Listener {
      * ショップを更新する
      */
     private fun refreshShop(player: Player) {
-        // インベントリを閉じて再度開く
-        player.closeInventory()
-        openShop(player)
+        // 現在開いているショップインベントリを取得
+        val inventory = shopInventories[player] ?: return
+
+        // インベントリの内容をクリア（コイン表示アイテム以外）
+        for (i in 1 until inventory.size) {
+            inventory.setItem(i, null)
+        }
+
+        // インベントリの内容を更新
+        updateShopContents(inventory, player)
+
+        // インベントリを強制的に更新
+        player.updateInventory()
     }
 
     /**
@@ -208,6 +246,35 @@ class ShopGUI(private val plugin: NarouSkinPacks) : Listener {
     @EventHandler
     fun onInventoryClose(event: InventoryCloseEvent) {
         val player = event.player as? Player ?: return
-        shopInventories.remove(player)
+
+        // プレイヤーのショップインベントリだった場合
+        if (shopInventories.containsKey(player)) {
+            // インベントリを強制的に更新して状態を同期
+            player.updateInventory()
+
+            // スケジューラで遅延実行して確実に反映
+            plugin.server.scheduler.runTask(
+                plugin,
+                Runnable {
+                    player.updateInventory()
+                }
+            )
+
+            // ショップインベントリの参照を削除
+            shopInventories.remove(player)
+        }
+    }
+
+    /**
+     * インベントリドラッグイベントを処理する
+     */
+    @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
+    fun onInventoryDrag(event: InventoryDragEvent) {
+        val player = event.whoClicked as? Player ?: return
+
+        // プレイヤーがショップを開いている場合はすべてのドラッグをキャンセル
+        if (shopInventories.containsKey(player)) {
+            event.isCancelled = true
+        }
     }
 }
