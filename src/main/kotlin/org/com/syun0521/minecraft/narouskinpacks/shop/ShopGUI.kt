@@ -21,7 +21,7 @@ class ShopGUI(private val plugin: NarouSkinPacks) : Listener {
     private val shopInventories = mutableMapOf<Player, Inventory>()
     private val skinConfig: CustomConfig = plugin.getSkinConfig()!!
     private val coinManager by lazy { plugin.getCoinManager() }
-
+    private val pluginConfig by lazy { plugin.getPluginConfig() }
     init {
         // リスナーとして登録
         plugin.server.pluginManager.registerEvents(this, plugin)
@@ -54,16 +54,16 @@ class ShopGUI(private val plugin: NarouSkinPacks) : Listener {
      */
     private fun loadSkins(inventory: Inventory, player: Player) {
         val skinsSection = skinConfig.getConfig()?.getConfigurationSection("skins")
-        val currentSkin = plugin.config.getString("players.${player.name}.currentSkin")
-        val ownedSkins = plugin.config.getStringList("players.${player.name}.ownedSkins")
+        val currentSkin = pluginConfig.getString("players.${player.name}.currentSkin", "shining")
+        val ownedSkins = pluginConfig.getStringList("players.${player.name}.ownedSkins")
 
         skinsSection?.getKeys(false)?.forEachIndexed { index, skinName ->
             val particle = skinConfig.getString("skins.$skinName.particle", "FLAME")
-            val price = plugin.config.getInt("skinshop.skins.$skinName.price", 100)
+            val price = pluginConfig.getInt("skinshop.skins.$skinName.price", 100)
             val displayItem = Material.valueOf(
-                plugin.config.getString("skinshop.skins.$skinName.display_item", "ENDER_EYE").uppercase()
+                pluginConfig.getString("skinshop.skins.$skinName.display_item", "ENDER_EYE").uppercase()
             )
-            val description = plugin.config.getString("skinshop.skins.$skinName.description", "カスタムスキンエフェクト")
+            val description = pluginConfig.getString("skinshop.skins.$skinName.description", "カスタムスキンエフェクト")
 
             val isOwned = ownedSkins.contains(skinName)
             val isSelected = skinName == currentSkin
@@ -151,11 +151,11 @@ class ShopGUI(private val plugin: NarouSkinPacks) : Listener {
             // スキン名を取得
             val skinName = ChatColor.stripColor(clickedItem.itemMeta?.displayName?.split(" ")?.get(0) ?: return)
             val owned = clickedItem.itemMeta?.lore?.any { it.contains("購入済み") } == true
-            val price = plugin.config.getInt("skinshop.skins.$skinName.price", 100)
+            val price = pluginConfig.getInt("skinshop.skins.$skinName.price", 100)
 
             if (owned) {
                 // 所有済みのスキンを選択
-                plugin.config.set("players.${player.name}.currentSkin", skinName)
+                pluginConfig.set("players.${player.name}.currentSkin", skinName)
                 plugin.saveConfig()
                 player.sendMessage("${ChatColor.GREEN}スキン「$skinName」を選択しました。")
 
@@ -171,12 +171,12 @@ class ShopGUI(private val plugin: NarouSkinPacks) : Listener {
 
                     if (success) {
                         // 購入したスキンを所有リストに追加
-                        val ownedSkins = plugin.config.getStringList("players.${player.name}.ownedSkins").toMutableList()
+                        val ownedSkins = pluginConfig.getStringList("players.${player.name}.ownedSkins").toMutableList()
                         ownedSkins.add(skinName)
-                        plugin.config.set("players.${player.name}.ownedSkins", ownedSkins)
+                        pluginConfig.set("players.${player.name}.ownedSkins", ownedSkins)
 
                         // 新しいスキンを選択状態にする
-                        plugin.config.set("players.${player.name}.currentSkin", skinName)
+                        pluginConfig.set("players.${player.name}.currentSkin", skinName)
                         plugin.saveConfig()
 
                         player.sendMessage("${ChatColor.GREEN}スキン「$skinName」を${price}コインで購入しました。")

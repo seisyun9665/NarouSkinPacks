@@ -152,49 +152,53 @@ class CustomConfig {
         return file
     }
 
-    fun setString(path: String?, string: String?) {
+    fun setString(path: String, string: String) {
         config?.set(path, string)
         saveConfig()
         reloadConfig()
     }
 
-    fun set(path: String?, value: Any?) {
+    fun set(path: String, value: Any?) {
         config?.set(path, value)
         saveConfig()
         reloadConfig()
     }
 
-    fun setInt(path: String?, amount: Int) {
+    fun setInt(path: String, amount: Int) {
         config?.set(path, amount)
         saveConfig()
         reloadConfig()
     }
 
-    fun setDouble(path: String?, amount: Double) {
+    fun setDouble(path: String, amount: Double) {
         config?.set(path, amount)
         saveConfig()
         reloadConfig()
     }
 
-    fun setBoolean(path: String?, amount: Boolean) {
+    fun setBoolean(path: String, amount: Boolean) {
         config?.set(path, amount)
         saveConfig()
         reloadConfig()
     }
 
-    fun getString(path: String?, def: String?): String? {
-        return config?.getString(path, def)
+    fun getString(path: String, def: String = ""): String {
+        return config?.getString(path, def) ?: def
     }
 
-    fun getInt(path: String?, def: Int): Int {
+    fun getStringList(path: String, def: List<String> = listOf()): List<String> {
+        return config?.getStringList(path) ?: def
+    }
+
+    fun getInt(path: String, def: Int = 0): Int {
         return config?.getInt(path, def) ?: def
     }
 
-    fun getDouble(path: String?, def: Double): Double {
+    fun getDouble(path: String, def: Double = 0.0): Double {
         return config?.getDouble(path, def) ?: def
     }
 
-    fun getBoolean(path: String?, def: Boolean): Boolean {
+    fun getBoolean(path: String, def: Boolean): Boolean {
         return config?.getBoolean(path, def) ?: def
     }
     fun getSkin(skinName: String): Skin {
