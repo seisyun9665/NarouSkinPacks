@@ -12,7 +12,7 @@ data class Skin(
     var y: Double,
     var z: Double,
     var speed: Double,
-    var forwardOffset: Double
+    var forwardOffset: Double,
 ) {
     fun setOffsets(x: Double, y: Double, z: Double) {
         this.x = x

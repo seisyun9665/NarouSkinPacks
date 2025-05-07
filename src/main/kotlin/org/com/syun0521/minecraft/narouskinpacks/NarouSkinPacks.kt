@@ -4,17 +4,16 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.plugin.java.JavaPlugin
-import org.com.syun0521.minecraft.narouskinpacks.api.HttpApiServer
+import org.com.syun0521.minecraft.narouskinpacks.api.KtorApiServer
 import org.com.syun0521.minecraft.narouskinpacks.coin.CoinManager
 import org.com.syun0521.minecraft.narouskinpacks.events.PlayerMoveHandler
-import kotlin.text.contains
 
 class NarouSkinPacks : JavaPlugin(), Listener {
     private var pluginConfig: CustomConfig? = null
     private var skinConfig: CustomConfig? = null
     private var playerMoveHandler: PlayerMoveHandler? = null
     private var coinManager: CoinManager? = null
-    private var httpApiServer: HttpApiServer? = null
+    private var ktorApiServer: KtorApiServer? = null
 
     override fun onEnable() {
         saveDefaultConfig()
@@ -41,8 +40,10 @@ class NarouSkinPacks : JavaPlugin(), Listener {
         if (apiEnabled) {
             try {
                 logger.info("APIサーバーを初期化しています...")
-                httpApiServer = HttpApiServer(this, coinManager!!, apiPort, apiKey)
-                httpApiServer?.start()
+                logger.info("API設定: ポート=$apiPort, APIキー=$apiKey")
+                ktorApiServer = KtorApiServer(this, coinManager!!, apiPort, apiKey)
+                ktorApiServer?.start()
+                logger.info("HTTPサーバー起動: http://localhost:$apiPort/api/purchase/notify")
                 logger.info("HTTP API Server started on port $apiPort")
             } catch (e: Exception) {
                 logger.severe("Failed to start HTTP API Server: ${e.message}")
@@ -55,7 +56,9 @@ class NarouSkinPacks : JavaPlugin(), Listener {
 
     override fun onDisable() {
         // HTTP APIサーバーの停止
-        httpApiServer?.stop()
+        logger.info("プラグイン無効化: HTTP APIサーバーを停止します")
+        ktorApiServer?.stop()
+        logger.info("HTTPサーバーを停止しました")
         logger.info("HTTP API Server stopped")
     }
 

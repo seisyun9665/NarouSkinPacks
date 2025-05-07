@@ -4,7 +4,10 @@ import org.bukkit.Particle
 import org.bukkit.event.player.PlayerMoveEvent
 import org.com.syun0521.minecraft.narouskinpacks.CustomConfig
 
-class PlayerMoveHandler(private val pluginConfig: CustomConfig, private val skinConfig: CustomConfig) {
+class PlayerMoveHandler(
+    private val pluginConfig: CustomConfig,
+    private val skinConfig: CustomConfig,
+) {
 
     fun handlePlayerMove(event: PlayerMoveEvent) {
         val player = event.player
@@ -20,7 +23,7 @@ class PlayerMoveHandler(private val pluginConfig: CustomConfig, private val skin
 
                 // Retrieve the skin name from the configuration for the player
                 val skinName = pluginConfig.getString("players.$playerName.currentSkin", "shining")
-                val skin = skinConfig.getSkin(skinName!!)
+                val skin = skinConfig.getSkin(skinName)
 
                 val spawnLocation = player.location.add(direction.multiply(skin.forwardOffset))
                 player.world.spawnParticle(
@@ -30,7 +33,7 @@ class PlayerMoveHandler(private val pluginConfig: CustomConfig, private val skin
                     skin.x,
                     skin.y,
                     skin.z,
-                    skin.speed
+                    skin.speed,
                 )
             }
         }
