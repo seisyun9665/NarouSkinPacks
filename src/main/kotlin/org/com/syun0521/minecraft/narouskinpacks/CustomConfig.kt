@@ -100,9 +100,9 @@ class CustomConfig {
             YamlConfiguration.loadConfiguration(
                 java.io.InputStreamReader(
                     defConfigStream,
-                    java.nio.charset.StandardCharsets.UTF_8
-                )
-            )
+                    java.nio.charset.StandardCharsets.UTF_8,
+                ),
+            ),
         )
     }
 

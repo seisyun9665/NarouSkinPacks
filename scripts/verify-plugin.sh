@@ -24,7 +24,7 @@ echo -e "${BLUE}=== NarouSkinPacksプラグインの検証 ===${NC}"
 JAR_FILE="build/libs/NarouSkinPacks-1.0.jar"
 if [ ! -f "$JAR_FILE" ]; then
   echo -e "${RED}エラー: プラグインJARファイルが見つかりません。${NC}"
-  echo -e "${YELLOW}先にビルドを実行してください: ./gradlew build${NC}"
+  echo -e "${YELLOW}先にビルドを実行してください: ./gradlew clean shadowJar${NC}"
   exit 1
 fi
 

@@ -54,7 +54,7 @@ step "NarouSkinPacks更新処理を開始します"
 
 # 1. プラグインのビルド
 step "プラグインをビルドしています"
-./gradlew build
+./gradlew clean shadowJar
 
 if [ $? -ne 0 ]; then
   error "ビルドに失敗しました"

@@ -60,8 +60,9 @@ class ShopGUI(private val plugin: NarouSkinPacks) : Listener {
         // プレイヤーのコイン残高表示
         val coins = coinManager.getCoins(player.name)
         val infoItem = createInfoItem(
-            Material.GOLD_INGOT, "${ChatColor.YELLOW}残高: ${coins}コイン",
-            listOf("${ChatColor.GRAY}スキンパックを購入するには", "${ChatColor.GRAY}アイテムをクリックしてください")
+            Material.GOLD_INGOT,
+            "${ChatColor.YELLOW}残高: ${coins}コイン",
+            listOf("${ChatColor.GRAY}スキンパックを購入するには", "${ChatColor.GRAY}アイテムをクリックしてください"),
         )
         inventory.setItem(0, infoItem)
     }
@@ -78,7 +79,7 @@ class ShopGUI(private val plugin: NarouSkinPacks) : Listener {
             val particle = skinConfig.getString("skins.$skinName.particle", "FLAME")
             val price = pluginConfig.getInt("skinshop.skins.$skinName.price", 100)
             val displayItem = Material.valueOf(
-                pluginConfig.getString("skinshop.skins.$skinName.display_item", "ENDER_EYE").uppercase()
+                pluginConfig.getString("skinshop.skins.$skinName.display_item", "ENDER_EYE").uppercase(),
             )
             val description = pluginConfig.getString("skinshop.skins.$skinName.description", "カスタムスキンエフェクト")
 
@@ -88,32 +89,35 @@ class ShopGUI(private val plugin: NarouSkinPacks) : Listener {
             val item = if (isOwned) {
                 if (isSelected) {
                     createSkinItem(
-                        displayItem, "${ChatColor.GREEN}$skinName ${ChatColor.GOLD}[選択中]",
+                        displayItem,
+                        "${ChatColor.GREEN}$skinName ${ChatColor.GOLD}[選択中]",
                         listOf(
                             "${ChatColor.GRAY}パーティクル: $particle",
                             "${ChatColor.GREEN}購入済み",
-                            "${ChatColor.YELLOW}クリックして選択"
-                        )
+                            "${ChatColor.YELLOW}クリックして選択",
+                        ),
                     )
                 } else {
                     createSkinItem(
-                        displayItem, "${ChatColor.GREEN}$skinName",
+                        displayItem,
+                        "${ChatColor.GREEN}$skinName",
                         listOf(
                             "${ChatColor.GRAY}パーティクル: $particle",
                             "${ChatColor.GREEN}購入済み",
-                            "${ChatColor.YELLOW}クリックして選択"
-                        )
+                            "${ChatColor.YELLOW}クリックして選択",
+                        ),
                     )
                 }
             } else {
                 createSkinItem(
-                    displayItem, "${ChatColor.WHITE}$skinName",
+                    displayItem,
+                    "${ChatColor.WHITE}$skinName",
                     listOf(
                         "${ChatColor.GRAY}パーティクル: $particle",
                         "${ChatColor.GRAY}説明: $description",
                         "${ChatColor.GOLD}価格: ${price}コイン",
-                        "${ChatColor.YELLOW}クリックして購入"
-                    )
+                        "${ChatColor.YELLOW}クリックして購入",
+                    ),
                 )
             }
 
@@ -257,7 +261,7 @@ class ShopGUI(private val plugin: NarouSkinPacks) : Listener {
                 plugin,
                 Runnable {
                     player.updateInventory()
-                }
+                },
             )
 
             // ショップインベントリの参照を削除

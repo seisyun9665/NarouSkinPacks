@@ -1,6 +1,6 @@
 # NarouSkinPacks
 
-Minecraftサーバー用プラグインで、プレイヤーが歩くたびにパーティクルエフェクト（スキン）を表示します。プレイヤーごとに異なるスキンを設定できます。
+Minecraft サーバー用プラグインで、プレイヤーが歩くたびにパーティクルエフェクト（スキン）を表示します。プレイヤーごとに異なるスキンを設定できます。
 
 ## 機能
 
@@ -8,7 +8,7 @@ Minecraftサーバー用プラグインで、プレイヤーが歩くたびに�
 - 豊富なパーティクル設定オプション（パーティクルの種類、量、速度など）
 - コマンドを使用した簡単な設定
 - コイン管理システム
-- HTTPベースのAPI機能（オプション）
+- HTTP ベースの API 機能（オプション）
 
 ## 要件
 
@@ -17,7 +17,7 @@ Minecraftサーバー用プラグインで、プレイヤーが歩くたびに�
 
 ## インストール方法
 
-1. [リリースページ](https://github.com/yourusername/NarouSkinPacks/releases)から最新のJARファイルをダウンロード
+1. [リリースページ](https://github.com/yourusername/NarouSkinPacks/releases)から最新の JAR ファイルをダウンロード
 2. サーバーの`plugins`フォルダに配置
 3. サーバーを再起動またはリロード
 
@@ -63,40 +63,40 @@ coins:
 ```yaml
 skins:
   skinname:
-    particle: "END_ROD"  # パーティクルの種類（Minecraft のパーティクル名）
-    type: "currentSkin"       # 発動タイプ（現在は currentSkin のみ対応）
-    amount: 20           # パーティクルの量
-    x: 0.5               # X方向の広がり
-    y: 0.0               # Y方向の広がり
-    z: 0.5               # Z方向の広がり
-    speed: 0.1           # パーティクルの速度
-    forwardOffset: 5.0   # 前方オフセット
+    particle: "END_ROD" # パーティクルの種類（Minecraft のパーティクル名）
+    type: "currentSkin" # 発動タイプ（現在は currentSkin のみ対応）
+    amount: 20 # パーティクルの量
+    x: 0.5 # X方向の広がり
+    y: 0.0 # Y方向の広がり
+    z: 0.5 # Z方向の広がり
+    speed: 0.1 # パーティクルの速度
+    forwardOffset: 5.0 # 前方オフセット
 ```
 
 ## 利用可能なスキン
 
 デフォルトで以下のスキンが含まれています:
 
-- `shining` - END_RODパーティクルを使用した輝くエフェクト
-- `redstone` - REDSTONEパーティクルを使用した赤いエフェクト
-- `magic` - SPELL_WITCHパーティクルを使用した魔法のエフェクト
-- `heart` - HEARTパーティクルを使用したハートエフェクト
+- `shining` - END_ROD パーティクルを使用した輝くエフェクト
+- `redstone` - REDSTONE パーティクルを使用した赤いエフェクト
+- `magic` - SPELL_WITCH パーティクルを使用した魔法のエフェクト
+- `heart` - HEART パーティクルを使用したハートエフェクト
 
 ## カスタムスキンの作成
 
-`skins.yml`ファイルに新しいスキン設定を追加することで、カスタムスキンを作成できます。パーティクルの種類はMinecraftの[パーティクル名](https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Particle.html)を参照してください。
+`skins.yml`ファイルに新しいスキン設定を追加することで、カスタムスキンを作成できます。パーティクルの種類は Minecraft の[パーティクル名](https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Particle.html)を参照してください。
 
 ## ライセンス
 
-このプロジェクトは[MITライセンス](LICENSE)のもとで公開されています。
+このプロジェクトは[MIT ライセンス](LICENSE)のもとで公開されています。
 
 ## 開発者向け情報
 
-このプロジェクトはKotlinで開発されており、Gradleを使用してビルドします。
+このプロジェクトは Kotlin で開発されており、Gradle を使用してビルドします。
 
 ```bash
 # ビルド方法
-./gradlew build
+./gradlew clean shadowJar
 ```
 
 ### 開発スクリプト
@@ -107,13 +107,13 @@ skins:
 
 - `scripts/deploy-and-verify.sh` - ビルド、デプロイ、検証を一括で行う
 - `scripts/deploy-narou.sh` - ビルドしたプラグインをリモートサーバーにデプロイ
-- `scripts/mc-console.sh` - リモートのMinecraftサーバーコンソールに接続
+- `scripts/mc-console.sh` - リモートの Minecraft サーバーコンソールに接続
 - `scripts/start-mc-server.sh` - リモートサーバーを起動
 - `scripts/verify-plugin.sh` - プラグインの動作検証を支援
 
 ### プラグインのデプロイ
 
-開発環境からリモートのMinecraftサーバーにプラグインを自動デプロイするためのスクリプトが用意されています。
+開発環境からリモートの Minecraft サーバーにプラグインを自動デプロイするためのスクリプトが用意されています。
 
 ```bash
 # デプロイスクリプトの実行
@@ -121,28 +121,30 @@ skins:
 ```
 
 デプロイスクリプトは以下の処理を行います：
+
 - ローカルのビルド成果物をリモートサーバーにコピー
 - デプロイ前に自動的にバックアップを作成
 - サーバー状態の検出と適切なフィードバックの提供
 
-※スクリプトを使用する前に、SSH接続設定と対象サーバーのパスを適切に設定してください。
+※スクリプトを使用する前に、SSH 接続設定と対象サーバーのパスを適切に設定してください。
 
 ## リモート接続方法
 
-リモートMinecraftサーバーに接続・デプロイするためのガイドラインです。
+リモート Minecraft サーバーに接続・デプロイするためのガイドラインです。
 
-### SSH接続設定
+### SSH 接続設定
 
-1. SSH鍵の設定
+1. SSH 鍵の設定
+
    ```bash
    # SSH鍵の生成（未作成の場合）
    ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
-   
+
    # SSH鍵をリモートサーバーに登録
    ssh-copy-id -i ~/.ssh/id_rsa.pub username@remote_host
    ```
 
-2. SSH設定ファイルの作成（~/.ssh/config）
+2. SSH 設定ファイルの作成（~/.ssh/config）
    ```
    Host minecraft-server
      HostName xxx.xxx.xxx.xxx
@@ -183,22 +185,22 @@ BACKUP_DIR="/path/to/backups/plugins"  # バックアップディレクトリ
 ./scripts/verify-plugin.sh
 ```
 
-### CI/CD自動化
+### CI/CD 自動化
 
-本プロジェクトはGitHub Actionsによる自動ビルド・デプロイに対応しています。設定には以下のシークレットが必要です：
+本プロジェクトは GitHub Actions による自動ビルド・デプロイに対応しています。設定には以下のシークレットが必要です：
 
-- `SSH_PRIVATE_KEY`: SSHプライベートキー
-- `KNOWN_HOSTS`: サーバーのknown_hosts情報
+- `SSH_PRIVATE_KEY`: SSH プライベートキー
+- `KNOWN_HOSTS`: サーバーの known_hosts 情報
 - `REMOTE_USER`: リモートユーザー名
 - `REMOTE_HOST`: リモートホスト名
 - `REMOTE_PATH`: リモートプラグインのパス
 - `BACKUP_DIR`: バックアップディレクトリのパス
 
-コミットをpushするかGitHub上で手動トリガーすることで、自動的にビルドとデプロイが実行されます。
+コミットを push するか GitHub 上で手動トリガーすることで、自動的にビルドとデプロイが実行されます。
 
 ### サーバー管理コマンド
 
-リモートサーバーに接続後、以下のコマンドでMinecraftサーバーを管理できます：
+リモートサーバーに接続後、以下のコマンドで Minecraft サーバーを管理できます：
 
 ```bash
 # サーバーの起動
@@ -240,11 +242,11 @@ NarouSkinPacks/
 
 ## 開発方針
 
-- コードはKotlinのベストプラクティスに従って記述する
+- コードは Kotlin のベストプラクティスに従って記述する
 - 機能ごとに適切なパッケージに分離する
 - テスト容易性を考慮した設計にする
 - スクリプトを活用して開発効率を向上させる
 
 ## 問題報告
 
-バグや機能リクエストは[Issue](https://github.com/yourusername/NarouSkinPacks/issues)でお知らせください。 
+バグや機能リクエストは[Issue](https://github.com/yourusername/NarouSkinPacks/issues)でお知らせください。

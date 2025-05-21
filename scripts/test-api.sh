@@ -16,8 +16,8 @@ SSH_KEY="~/.ssh/ssh-key-2021-11-26.key"
 
 # デフォルト設定値
 DEFAULT_PORT=8080
-DEFAULT_API_KEY="test-api-key"
-DEFAULT_PLAYER="testPlayer"
+DEFAULT_API_KEY="YOUR_API_KEY"
+DEFAULT_PLAYER="seisyun"
 DEFAULT_COINS=100
 DEFAULT_TRANSACTION_ID=$(date +%s)
 
