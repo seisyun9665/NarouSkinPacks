@@ -68,7 +68,7 @@ NarouSkinPacksの開発を始めるにあたり、以下のルールファイル
 
 3. 初回ビルドを実行
    ```bash
-   ./gradlew build
+   ./gradlew clean shadowJar
    ```
 
 #### 便利なスクリプト

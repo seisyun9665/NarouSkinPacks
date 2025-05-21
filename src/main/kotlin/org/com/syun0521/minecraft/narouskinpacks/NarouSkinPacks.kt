@@ -39,27 +39,18 @@ class NarouSkinPacks : JavaPlugin(), Listener {
         // HTTPサーバーの初期化と起動
         if (apiEnabled) {
             try {
-                logger.info("APIサーバーを初期化しています...")
-                logger.info("API設定: ポート=$apiPort, APIキー=$apiKey")
                 ktorApiServer = KtorApiServer(this, coinManager!!, apiPort, apiKey)
                 ktorApiServer?.start()
-                logger.info("HTTPサーバー起動: http://localhost:$apiPort/api/purchase/notify")
-                logger.info("HTTP API Server started on port $apiPort")
             } catch (e: Exception) {
                 logger.severe("Failed to start HTTP API Server: ${e.message}")
                 e.printStackTrace()
             }
-        } else {
-            logger.info("API設定が無効化されているため、APIサーバーは起動しません")
         }
     }
 
     override fun onDisable() {
         // HTTP APIサーバーの停止
-        logger.info("プラグイン無効化: HTTP APIサーバーを停止します")
         ktorApiServer?.stop()
-        logger.info("HTTPサーバーを停止しました")
-        logger.info("HTTP API Server stopped")
     }
 
     private fun loadConfigs() {
